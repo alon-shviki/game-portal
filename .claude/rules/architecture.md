@@ -7,56 +7,66 @@ nginx  (TLS termination, reverse proxy)
   /                     → portal shell (static HTML or Blazor WASM)
   /api/auth/*           → portal auth server  (ASP.NET Core)
   /<game-name>/*        → game client         (static WASM or HTML)
-  /api/<game-name>/*    → game API server     (ASP.NET Core)
 ```
 
-All services in one top-level `docker-compose.yml` (not yet created — Bullet Heaven still has its own standalone compose for dev).
+All services in one top-level `docker-compose.yml`.
 
 ## Shared Auth
 
-One JWT signing key across every server. The portal auth server issues tokens; game servers validate them with the same key — no cross-service round-trip needed.
+One JWT signing key across every server. The portal auth server issues tokens; game clients read the token from `localStorage["jwt"]` and send it as `Authorization: Bearer` on every API call.
 
 ```
 Player logs in at portal
   → POST /api/auth/login → { token }
-  → stored in localStorage
+  → stored in localStorage["jwt"]
 
 Player opens a game
-  → game client reads token from localStorage
-  → game API calls: Authorization: Bearer <token>
-  → game server validates using shared JWT_KEY
+  → game client reads localStorage["jwt"]
+  → proxies API calls through game nginx → portal auth server
+  → portal auth server validates JWT, records scores
 ```
 
-JWT claims: `sub` (user ID), `username`, `iat`, `exp` (24h).
+JWT claims: `sub` (user ID), `unique_name` (username), `exp` (24h).
 
-Game servers expose no `/register` or `/login`. They only accept and validate tokens.
+Game clients expose **no** `/register` or `/login`. Auth is portal-only.
+
+## Portal Auth Server — Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| POST | `/api/register` | — | Create portal account |
+| POST | `/api/login` | — | Login, returns JWT |
+| GET | `/api/me` | Bearer | Who am I? |
+| POST | `/api/scores/{game}` | Bearer | Submit a score |
+| GET | `/api/leaderboard/{game}` | — | Top 10 for a game |
+| GET | `/api/leaderboard/{game}/me` | Bearer | User's personal best (top 5) |
+| GET | `/health` | — | Liveness |
+
+## Per-Game Stack Contract
+
+Every game client's nginx must proxy these paths to `portal-auth:5001`:
+
+| Game path | Proxies to |
+|-----------|-----------|
+| `= /api/scores` | `/api/scores/{game-slug}` |
+| `= /api/scores/me` | `/api/leaderboard/{game-slug}/me` |
+| `/api/leaderboard` | `/api/leaderboard/{game-slug}` |
+
+Games have **no** API server of their own. No game-specific DB.
 
 ## Environment Variables
 
 | Variable | Where | Description |
 |----------|-------|-------------|
-| `JWT_KEY` | all servers | Shared JWT signing secret |
-| `PORTAL_DB` | portal auth | Portal user DB connection string |
-| `<GAME>_DB` | game server | Game-specific DB connection string |
+| `JWT_KEY` | portal auth | JWT signing secret |
+| `PORTAL_DB` / `ConnectionStrings__Default` | portal auth | Portal DB connection |
 | `POSTGRES_PASSWORD` | postgres | DB root password |
 
-All via `.env` (gitignored) or a secrets manager — never hardcoded.
-
-## Per-Game Stack Contract
-
-Every game server must expose:
-
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/scores` | Bearer | Save a run score |
-| GET | `/api/leaderboard` | Public | Top 10 `{ username, score }` |
-| GET | `/health` | Public | Liveness check |
-
-The portal aggregates leaderboard data and displays personal bests on game cards.
+All via `.env` (gitignored) — never hardcoded.
 
 ## Current State
 
-- Portal shell: not built yet
-- Portal auth server: not built yet — Bullet Heaven has standalone auth for now
-- Portal docker-compose: not built yet
-- Bullet Heaven: fully functional standalone at `~/Desktop/Bullet-Heaven`
+- Portal shell: built (`shell/index.html`) — auth + leaderboard page
+- Portal auth server: built (`portal-auth/`) — auth + scores + leaderboard endpoints
+- Docker Compose: `docker-compose.yml` — portal nginx (3000), portal-auth, postgres, bh-client (8080)
+- Bullet Heaven: game client image on GHCR (`ghcr.io/alon-shviki/bh-client`) — nginx proxies scores/leaderboard to portal-auth; no standalone API server

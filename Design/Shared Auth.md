@@ -9,22 +9,20 @@ One username + password works across every game in the portal. Log in once on th
 ## How It Works
 
 ```
-Portal Auth Server  (issues JWTs)
-        ↑
-        │  POST /api/login → { token }
-        │
-   [Portal Shell]  ← user logs in here
-        │
-        │  token stored in localStorage
-        │
-   [Game client]   ← reads token from localStorage on load
-        │
-        │  Authorization: Bearer <token>
-        ↓
-   [Game Server]   ← validates JWT, trusts claims
+[Portal Shell]  ← user logs in here (localhost:3000)
+     │
+     │  POST /api/auth/login → { token }
+     │  token stored in localStorage["jwt"]
+     │
+     │  Play button clicked → game opens with #portal_token=<jwt> in URL hash
+     ↓
+[Game client]   ← reads hash on load, stores to localStorage["jwt"]
+     │
+     │  reads localStorage["jwt"] on startup
+     │  Authorization: Bearer <token>  on all API calls
+     ↓
+[Portal Auth Server]  ← validates JWT, records scores
 ```
-
-The JWT signing key is **shared** between the portal auth server and every game server. This means a token issued by the portal is accepted by any game without a round-trip back to the portal.
 
 ---
 
@@ -33,15 +31,15 @@ The JWT signing key is **shared** between the portal auth server and every game 
 ```json
 {
   "sub": "42",
-  "username": "alon",
-  "iat": 1750000000,
+  "unique_name": "alon",
   "exp": 1750086400
 }
 ```
 
-- `sub` — user ID (integer, unique across the platform)
-- `username` — display name (used on leaderboards)
-- Token lifetime: 24 hours (configurable)
+- `sub` — user ID (integer)
+- `unique_name` — display name (used on leaderboards, matches `JwtRegisteredClaimNames.UniqueName`)
+- Token lifetime: 24 hours
+- `MapInboundClaims = false` required on all JWT validators — keeps claim names as-is
 
 ---
 
@@ -52,33 +50,29 @@ The JWT signing key is **shared** between the portal auth server and every game 
 | POST | `/api/register` | Create account. 409 if username taken. |
 | POST | `/api/login` | Returns signed JWT. 401 on bad creds. |
 | GET | `/api/me` | Returns `{ id, username }` for current token. |
+| POST | `/api/scores/{game}` | Submit a run score. Bearer required. |
+| GET | `/api/leaderboard/{game}` | Top 10 for a game. Public. |
+| GET | `/api/leaderboard/{game}/me` | User's top 5 runs for a game. Bearer required. |
 
-Game servers expose **no** `/register` or `/login` — they only accept and validate tokens.
+Games expose **no** `/register` or `/login`. They only call portal endpoints (proxied via their own nginx).
 
 ---
 
-## Token Storage
+## Cross-Origin Token Relay
 
-- Stored in `localStorage` under key `"jwt"` by the portal shell
-- Game clients read it with `localStorage.getItem("jwt")` on startup
-- Games attach it as `Authorization: Bearer <token>` on every API call
-- On expiry: game client catches 401, redirects user back to portal login
+Portal (port 3000) and games (port 8080) are different origins — `localStorage` is not shared. When the user clicks Play:
+
+1. Portal's Play button: `window.open(gameUrl + '#portal_token=' + encodeURIComponent(jwt))`
+2. Game's `index.html` reads the hash fragment before Blazor loads, stores to `localStorage["jwt"]`
+3. Hash is cleared from the URL with `history.replaceState`
+
+This is a dev-only concern. In production all services share the same origin.
 
 ---
 
 ## Security Rules
 
 - Passwords: bcrypt hash only (`BCrypt.Net-Next`), never logged or returned
-- JWT signing key: one shared secret, stored in environment variables / `dotnet user-secrets` on each server — never hardcoded
-- HTTPS everywhere in production (nginx terminates TLS)
-- Refresh tokens: not implemented yet — re-login on expiry
-
----
-
-## Current State
-
-Bullet Heaven has its own auth (`AuthController.cs`) that is a **standalone implementation** — it has its own user table and issues its own JWTs. When the portal auth server is built, the plan is:
-
-1. Migrate Bullet Heaven's `User` table to the portal auth DB
-2. Remove `AuthController` from `BulletHeaven.Server`
-3. Game server trusts the shared JWT signing key instead
+- JWT signing key: one shared secret in `.env` — never hardcoded
+- HTTPS in production (nginx terminates TLS)
+- Token in URL hash is not sent to server (fragment never leaves the browser)

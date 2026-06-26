@@ -1,38 +1,33 @@
 # Game Portal — Home
 
-Central hub for all games in development. Each game is a standalone project; this portal will eventually host them all under one web frontend.
+A single platform hosting multiple browser games. One account, shared leaderboard, one `docker compose up`.
 
-## Games in Development
+## Games
 
-| Game | Status | Stack | Path |
+| Game | Status | Stack | Port |
 |------|--------|-------|------|
-| [[Games/Bullet Heaven]] | Active development | Blazor WASM + ASP.NET Core | `~/Desktop/Bullet-Heaven` |
+| [[Games/Bullet Heaven]] | ✅ Live | Blazor WASM | :8080 |
 
-## Portal Vision
+## Portal
 
-A single landing page that links out to each playable game. Games share:
-- A common **auth system** (JWT, one user account works across games)
-- A common **leaderboard API** per game
-- A shared **visual identity** (dark theme, consistent UI components)
-
-## Pending Games (Ideas)
-
-- Platformer — simple 2D side-scroller, possibly Blazor or vanilla JS canvas
-- Tower Defense — grid-based, turn-based wave management
-- Puzzle / Match-3 — quick session game for the portal homepage
+| Layer | Status |
+|-------|--------|
+| Shell (`shell/index.html`) | ✅ Live — dark theme, game cards, auth modal, leaderboard |
+| Auth server (`portal-auth/`) | ✅ Live — register, login, JWT, scores, leaderboard API |
+| Docker Compose | ✅ Live — portal :3000, BH :8080, one command |
 
 ## Design Notes
 
 - [[Design/Vision]] — landing page layout, user journey, key decisions
-- [[Design/Shared Auth]] — single JWT across all games, migration plan
+- [[Design/Shared Auth]] — JWT flow, cross-origin token relay, portal leaderboard
 - [[Design/UI Identity]] — colour palette, typography, game card design
 
 ## Tech Notes
 
-- [[Tech/Infrastructure]] — Docker Compose, nginx routing, environment vars
+- [[Tech/Infrastructure]] — Docker Compose, nginx routing, CI/CD
 - [[Tech/Adding a New Game]] — step-by-step checklist for onboarding a new game
 
-## Games
+## Links
 
 - [[Games/Bullet Heaven]] — full game page
 - [[Roadmap]] — status of all tasks + what's next

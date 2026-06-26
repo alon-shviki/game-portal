@@ -11,12 +11,16 @@
 - [x] Full backend: auth (JWT + bcrypt), scores, leaderboard (PostgreSQL)
 - [ ] Web Worker physics offload (WORK-001, WORK-002) → [[Games/Bullet-Heaven/Notes/Tasks|full spec]]
 
-## Next — Portal Shell
+## Now — Portal Shell + Shared Leaderboard
 
-- [ ] Landing page — see [[Design/Vision]] for layout
-- [ ] Shared auth server — see [[Design/Shared Auth]] for design
-- [ ] Shared leaderboard UI component reused per game
-- [ ] Dockerised deployment — see [[Tech/Infrastructure]] for compose layout
+- [x] Landing page (`shell/index.html`) — see [[Design/Vision]] for layout
+- [x] Shared auth server (`portal-auth/`) — see [[Design/Shared Auth]] for design
+- [x] Dockerised deployment + nginx (`docker-compose.yml`, `nginx.conf`) → http://localhost:3000
+- [x] Portal owns all scores — `POST /api/scores/{game}`, `GET /api/leaderboard/{game}`, personal best
+- [x] Leaderboard page in portal shell — per-game tab selector
+- [x] BH client proxies score/leaderboard calls to portal via nginx (no BH API server)
+- [x] BH reads portal JWT from `localStorage["jwt"]` — one login, works everywhere
+- [x] BH images on GHCR (`ghcr.io/alon-shviki/bh-client`) — CI pushes on every merge to main
 
 ## Later — Additional Games
 

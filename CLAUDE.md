@@ -3,14 +3,19 @@
 Top-level portal — multiple standalone browser games, one platform.
 
 ## Commands
-- Bullet Heaven (dev): `cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run` → http://localhost:5292
-- Bullet Heaven (full stack): `cd ~/Desktop/Bullet-Heaven && docker compose up --build` → http://localhost:8080
+- **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env` (fill in secrets)
+- **Everything** (recommended): `cd ~/Desktop/game && docker compose up --build`
+  - Portal → http://localhost:3000
+  - Bullet Heaven → http://localhost:8080  (images pulled from `ghcr.io/alon-shviki/bh-*`)
+  - Port 80 is taken by `idp-control-plane`; portal runs on 3000
 
 ## Games
 
 | Game | Repo | Stack | Status |
 |------|------|-------|--------|
-| Bullet Heaven | `~/Desktop/Bullet-Heaven` | Blazor WASM + ASP.NET Core + PostgreSQL | Active |
+| Bullet Heaven | `~/Desktop/Bullet-Heaven` | Blazor WASM (client only) | Active |
+
+Games have no standalone API server. Auth, scores, and leaderboard live in `portal-auth`. See `.claude/rules/architecture.md`.
 
 ## Detailed Rules — read the matching file before working on:
 

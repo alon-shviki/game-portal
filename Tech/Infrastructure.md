@@ -2,90 +2,65 @@
 
 ## Local Dev
 
-Each game runs independently. No portal shell yet — just run the game directly:
+Everything runs from the portal compose. One command starts the whole stack:
 
 ```bash
-# Bullet Heaven
+cd ~/Desktop/game && docker compose up
+# Portal shell  → http://localhost:3000
+# Bullet Heaven → http://localhost:8080
+```
+
+BH client only (no auth/scores — for pure game dev):
+```bash
 cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run
 # → http://localhost:5292
-
-# Full stack (game + postgres)
-cd ~/Desktop/Bullet-Heaven && docker compose up --build
-# → http://localhost:8080
 ```
 
 ---
 
-## Production Architecture (Target)
+## Current Architecture
 
 ```
-Internet
-    ↓
-  nginx  (TLS termination, reverse proxy)
-    ├── /                    → Portal shell (static HTML or Blazor WASM)
-    ├── /api/auth/*          → Portal Auth Server  (ASP.NET Core)
-    ├── /bullet-heaven/*     → BulletHeaven.Client (WASM static files)
-    └── /api/bullet-heaven/* → BulletHeaven.Server (ASP.NET Core API)
+docker-compose.yml  (~/Desktop/game/)
+  ├── nginx          :3000  → portal shell (static) + /api/auth/ → portal-auth
+  ├── portal-auth    :5001  → ASP.NET Core — auth, scores, leaderboard
+  ├── postgres       :5432  → portal DB (users + scores)
+  └── bh-client      :8080  → GHCR image (Blazor WASM + nginx)
+                               nginx proxies /api/scores, /api/leaderboard → portal-auth
 ```
 
-All services run as Docker containers, orchestrated by a single `docker-compose.yml` at the portal level.
+BH has **no standalone API server**. Auth, scores and leaderboard live entirely in `portal-auth`.
 
 ---
 
-## Docker Compose (Portal Level)
+## Docker Compose
 
 ```yaml
-# ~/Desktop/game/docker-compose.yml  (planned)
+# ~/Desktop/game/docker-compose.yml
 services:
-  nginx:
-    image: nginx:alpine
-    ports: ["80:80", "443:443"]
-    volumes: [./nginx.conf:/etc/nginx/nginx.conf]
-
-  portal-auth:
-    build: ./portal-auth
-    environment:
-      - JWT_KEY=${JWT_KEY}
-      - DB_CONNECTION=${PORTAL_DB}
-
-  bullet-heaven-server:
-    build: ../Bullet-Heaven/BulletHeaven.Server
-    environment:
-      - JWT_KEY=${JWT_KEY}          # same key as portal-auth
-      - DB_CONNECTION=${BH_DB}
-
-  postgres:
-    image: postgres:16
-    volumes: [pgdata:/var/lib/postgresql/data]
-    environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-
-volumes:
-  pgdata:
+  nginx:           # portal — port 3000
+  portal-auth:     # ASP.NET Core minimal API — port 5001
+  postgres:        # portal DB
+  bh-client:       # image: ghcr.io/alon-shviki/bh-client:latest — port 8080
 ```
 
-Key point: `JWT_KEY` is the **same value** in both `portal-auth` and `bullet-heaven-server`, so tokens issued by the portal are accepted by the game server without a round-trip.
+See the actual file for full env var wiring. Port 80 is taken by `idp-control-plane` on the dev machine, so portal runs on 3000.
 
 ---
 
-## nginx Routing
+## nginx Routing (Portal, port 3000)
 
 ```nginx
-# Route game API calls
-location /api/bullet-heaven/ {
-    proxy_pass http://bullet-heaven-server:5000/api/;
-}
+location /api/auth/   → portal-auth:5001/api/     (auth, scores, leaderboard)
+location /            → /usr/share/nginx/html       (portal shell static files)
+```
 
-# Route auth calls
-location /api/auth/ {
-    proxy_pass http://portal-auth:5001/api/;
-}
-
-# Serve portal static files
-location / {
-    root /usr/share/nginx/html;
-    try_files $uri $uri/ /index.html;
-}
+BH's internal nginx (port 8080):
+```nginx
+location = /api/scores        → portal-auth:5001/api/scores/bullet-heaven
+location = /api/scores/me     → portal-auth:5001/api/leaderboard/bullet-heaven/me
+location /api/leaderboard     → portal-auth:5001/api/leaderboard/bullet-heaven
+location /                    → Blazor WASM static files
 ```
 
 ---
@@ -94,17 +69,18 @@ location / {
 
 | Variable | Where Used | Description |
 |----------|-----------|-------------|
-| `JWT_KEY` | All servers | Shared JWT signing secret |
-| `PORTAL_DB` | portal-auth | Portal user DB connection string |
-| `BH_DB` | bullet-heaven-server | Bullet Heaven game DB connection string |
-| `POSTGRES_PASSWORD` | postgres | DB root password |
+| `JWT_KEY` | portal-auth | JWT signing secret (shared with BH via same server) |
+| `POSTGRES_PASSWORD` | postgres, portal-auth | DB password |
 
-All secrets via `.env` file (gitignored) or a secrets manager — never hardcoded.
+All secrets in `.env` (gitignored). Copy `.env.example` on a fresh clone.
 
 ---
 
-## Current State
+## CI / Docker Images
 
-- Bullet Heaven has its **own** `docker-compose.yml` in `~/Desktop/Bullet-Heaven/`
-- Portal-level compose doesn't exist yet
-- When portal auth is built, Bullet Heaven's auth will be migrated out of its own server
+| Image | Built by | Pushed to |
+|-------|----------|-----------|
+| `ghcr.io/alon-shviki/bh-client` | BH `.github/workflows/docker.yml` | GHCR (public) |
+| `portal-auth` | built locally via `docker compose build` | — |
+
+To deploy BH changes: push to `main` → CI builds new image → `docker compose pull bh-client && docker compose up -d`.

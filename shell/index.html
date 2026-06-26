@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0d0f;
+      --surface:    #1a1a1f;
+      --border:     #2a2a32;
+      --accent:     #7c3aed;
+      --accent-h:   #6d28d9;
+      --text:       #f4f4f5;
+      --muted:      #71717a;
+      --success:    #22c55e;
+      --danger:     #ef4444;
+      --gold:       #eab308;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+
+    nav { display: flex; gap: 8px; align-items: center; }
+
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-accent:hover { background: var(--accent-h); }
+
+    /* ── Main ── */
+    main { padding: 48px 40px; max-width: 1100px; margin: 0 auto; }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    /* stagger */
+    .card:nth-child(1) { animation-delay: 0ms; }
+    .card:nth-child(2) { animation-delay: 50ms; }
+    .card:nth-child(3) { animation-delay: 100ms; }
+    .card:nth-child(4) { animation-delay: 150ms; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      color: var(--muted);
+      user-select: none;
+    }
+    .card-thumb.coming-soon { filter: grayscale(0.6) brightness(0.5); }
+
+    .card-body { padding: 16px; display: flex; flex-direction: column; flex: 1; gap: 12px; }
+
+    .card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .card-tagline { font-size: 13px; color: var(--muted); margin-top: -8px; }
+
+    .card-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--gold);
+    }
+
+    .card-footer { margin-top: auto; }
+
+    .btn-play {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      background: var(--success);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      transition: opacity 0.15s, box-shadow 0.2s;
+    }
+    .btn-play:hover { opacity: 0.9; box-shadow: 0 0 12px rgba(34,197,94,0.4); }
+
+    .pill-soon {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--border);
+      color: var(--muted);
+      text-align: center;
+      width: 100%;
+    }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 360px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .tabs { display: flex; gap: 4px; }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      background: transparent;
+      color: var(--muted);
+      border: none;
+      border-bottom: 2px solid var(--border);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .tab.active { color: var(--text); border-color: var(--accent); }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .field input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--accent); }
+
+    .modal-error {
+      font-size: 13px;
+      color: var(--danger);
+      min-height: 18px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none; border: none;
+      color: var(--muted); font-size: 22px;
+      cursor: pointer; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal { position: relative; }
+
+    /* ── Leaderboard overlay ── */
+    .lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-y: auto;
+    }
+    .lb-overlay.open { display: flex; }
+
+    .lb-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 700px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+
+    .lb-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .lb-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .lb-game-tabs { display: flex; gap: 6px; }
+    .lb-tab {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lb-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .lb-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table tr.row-self td { background: rgba(124,58,237,0.08); }
+    .rank-gold   { color: var(--gold); font-weight: 700; }
+    .rank-silver { color: #94a3b8;     font-weight: 700; }
+    .rank-bronze { color: #c2845a;     font-weight: 700; }
+
+    .lb-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 32px 0; }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">My<span>Games</span></a>
+  <nav id="navGuest">
+    <button class="btn btn-ghost" onclick="openLeaderboard()">Leaderboard</button>
+    <button class="btn btn-ghost" onclick="openModal('login')">Log in</button>
+    <button class="btn btn-accent" onclick="openModal('register')">Sign up</button>
+  </nav>
+  <nav id="navUser" style="display:none;align-items:center;gap:12px;">
+    <button class="btn btn-ghost" onclick="openLeaderboard()">Leaderboard</button>
+    <span id="usernameDisplay" style="font-size:14px;color:var(--muted);"></span>
+    <button class="btn btn-ghost" onclick="logout()">Log out</button>
+  </nav>
+</header>
+
+<main>
+  <h1>Games</h1>
+  <div class="grid">
+
+    <!-- Bullet Heaven -->
+    <div class="card">
+      <div class="card-thumb" style="font-size:56px;">🔫</div>
+      <div class="card-body">
+        <div>
+          <div class="card-title">Bullet Heaven</div>
+          <div class="card-tagline">Survive. Level up. Repeat.</div>
+        </div>
+        <!-- ponytail: score hidden until auth server exists -->
+        <div class="card-footer">
+          <button class="btn-play" onclick="openGame('http://localhost:8080')">Play →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coming soon slots -->
+    <div class="card">
+      <div class="card-thumb coming-soon">🏰</div>
+      <div class="card-body">
+        <div>
+          <div class="card-title">Tower Defense</div>
+          <div class="card-tagline">Grid-based wave management.</div>
+        </div>
+        <div class="card-footer"><span class="pill-soon">Coming Soon</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-thumb coming-soon">🧩</div>
+      <div class="card-body">
+        <div>
+          <div class="card-title">Puzzle</div>
+          <div class="card-tagline">Quick session. Quick dopamine.</div>
+        </div>
+        <div class="card-footer"><span class="pill-soon">Coming Soon</span></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Leaderboard Overlay -->
+<div class="lb-overlay" id="lbOverlay" onclick="closeLbOnBackdrop(event)">
+  <div class="lb-panel">
+    <button class="modal-close" onclick="closeLeaderboard()">✕</button>
+    <div class="lb-header">
+      <span class="lb-title">Leaderboard</span>
+    </div>
+    <div class="lb-game-tabs" id="lbTabs">
+      <button class="lb-tab active" onclick="loadLeaderboard('bullet-heaven', this)">Bullet Heaven</button>
+    </div>
+    <div id="lbBody">
+      <p class="lb-empty">Loading…</p>
+    </div>
+  </div>
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-backdrop" id="authModal" onclick="closeOnBackdrop(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modalTitle">Log in</h2>
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Log in</button>
+      <button class="tab" id="tabRegister" onclick="switchTab('register')">Sign up</button>
+    </div>
+    <form id="authForm" onsubmit="submitAuth(event)">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="password" autocomplete="current-password" />
+        </div>
+        <div class="modal-error" id="authError"></div>
+        <button type="submit" class="btn btn-accent" id="submitBtn" style="width:100%;padding:10px;">Log in</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const AUTH = '/api/auth';
+  let currentTab = 'login';
+
+  // ── Auth state ────────────────────────────────────────────────────────────
+
+  function setUser(username) {
+    document.getElementById('navGuest').style.display = 'none';
+    document.getElementById('navUser').style.display = 'flex';
+    document.getElementById('usernameDisplay').textContent = username;
+  }
+
+  function clearUser() {
+    localStorage.removeItem('jwt');
+    document.getElementById('navGuest').style.display = '';
+    document.getElementById('navUser').style.display = 'none';
+  }
+
+  function logout() { clearUser(); }
+
+  // Check existing token on load
+  (async () => {
+    const token = localStorage.getItem('jwt');
+    if (!token) return;
+    try {
+      const res = await fetch(`${AUTH}/me`, { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) { const { username } = await res.json(); setUser(username); }
+      else clearUser();
+    } catch { /* server offline, stay logged out */ }
+  })();
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+
+  function openModal(tab) {
+    switchTab(tab);
+    document.getElementById('authModal').classList.add('open');
+    setTimeout(() => document.getElementById('username').focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById('authModal').classList.remove('open');
+    document.getElementById('authError').textContent = '';
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target === document.getElementById('authModal')) closeModal();
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    const isLogin = tab === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabRegister').classList.toggle('active', !isLogin);
+    document.getElementById('modalTitle').textContent = isLogin ? 'Log in' : 'Create account';
+    document.getElementById('submitBtn').textContent = isLogin ? 'Log in' : 'Sign up';
+    document.getElementById('authError').textContent = '';
+  }
+
+  async function submitAuth(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const errEl = document.getElementById('authError');
+    const btn = document.getElementById('submitBtn');
+
+    btn.disabled = true;
+    errEl.textContent = '';
+
+    try {
+      const endpoint = currentTab === 'login' ? 'login' : 'register';
+      const res = await fetch(`${AUTH}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (res.ok) {
+        const { token } = await res.json();
+        localStorage.setItem('jwt', token);
+        // Decode username from JWT payload (no round-trip needed)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUser(payload.unique_name ?? username);
+        closeModal();
+      } else {
+        errEl.textContent = await res.text() || 'Something went wrong.';
+      }
+    } catch {
+      errEl.textContent = 'Cannot reach auth server.';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeLeaderboard(); } });
+
+  // ── Game launcher ─────────────────────────────────────────────────────────
+
+  function openGame(baseUrl) {
+    const token = localStorage.getItem('jwt');
+    const url = token ? `${baseUrl}/#portal_token=${encodeURIComponent(token)}` : baseUrl;
+    window.open(url, '_blank');
+  }
+
+  // ── Leaderboard ───────────────────────────────────────────────────────────
+
+  let currentLbGame = 'bullet-heaven';
+
+  function openLeaderboard() {
+    document.getElementById('lbOverlay').classList.add('open');
+    loadLeaderboard(currentLbGame);
+  }
+
+  function closeLeaderboard() {
+    document.getElementById('lbOverlay').classList.remove('open');
+  }
+
+  function closeLbOnBackdrop(e) {
+    if (e.target === document.getElementById('lbOverlay')) closeLeaderboard();
+  }
+
+  async function loadLeaderboard(game, tabEl) {
+    currentLbGame = game;
+    if (tabEl) {
+      document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+      tabEl.classList.add('active');
+    }
+    const body = document.getElementById('lbBody');
+    body.innerHTML = '<p class="lb-empty">Loading…</p>';
+    try {
+      const res = await fetch(`/api/auth/leaderboard/${game}`);
+      if (!res.ok) throw new Error();
+      const rows = await res.json();
+      if (!rows.length) { body.innerHTML = '<p class="lb-empty">No scores yet — be the first!</p>'; return; }
+      const me = (() => { try { const t = localStorage.getItem('jwt'); return t ? JSON.parse(atob(t.split('.')[1])).unique_name : null; } catch { return null; } })();
+      body.innerHTML = `<table class="lb-table">
+        <thead><tr><th>#</th><th>Player</th><th>Score</th><th>Kills</th><th>Level</th><th>Date</th></tr></thead>
+        <tbody>${rows.map((r, i) => {
+          const rank = i + 1;
+          const rc = rank === 1 ? 'rank-gold' : rank === 2 ? 'rank-silver' : rank === 3 ? 'rank-bronze' : '';
+          const self = me && r.username === me ? ' row-self' : '';
+          const date = new Date(r.playedAt).toLocaleDateString('en', { month: 'short', day: 'numeric' });
+          return `<tr class="${self}"><td class="${rc}">${rank}</td><td>${r.username}</td><td>${r.value.toLocaleString()}</td><td>${r.kills}</td><td>${r.level}</td><td>${date}</td></tr>`;
+        }).join('')}</tbody>
+      </table>`;
+    } catch {
+      body.innerHTML = '<p class="lb-empty">Could not load leaderboard.</p>';
+    }
+  }
+</script>
+
+</body>
+</html>
