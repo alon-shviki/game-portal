@@ -1,0 +1,19 @@
+# Obsidian — personal settings, workspace state, cache (never commit these)
+.obsidian/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.vs/
+*.swp
+*.swo
+
+# Secrets / environment
+.env
+.env.*
+
+# Local Claude overrides (tokens, personal hooks — not shared rules)
+.claude/settings.local.json
