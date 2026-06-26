@@ -22,7 +22,7 @@
 - [x] BH reads portal JWT from `localStorage["jwt"]` — one login, works everywhere
 - [x] BH images on GHCR (`ghcr.io/alon-shviki/bh-client`) — CI pushes on every merge to main
 
-## Next — Agentic Dev Pipeline
+## Next — Agentic Git Branch Management & Pipelines
 
 - [ ] Git branch strategy — feature branches, PR reviews, protected main
 - [ ] Agentic pipeline — Claude Code runs on branches, auto-opens PRs, CI gates merge
