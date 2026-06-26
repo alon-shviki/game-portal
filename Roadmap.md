@@ -22,7 +22,17 @@
 - [x] BH reads portal JWT from `localStorage["jwt"]` — one login, works everywhere
 - [x] BH images on GHCR (`ghcr.io/alon-shviki/bh-client`) — CI pushes on every merge to main
 
+## Next — Agentic Dev Pipeline
+
+- [ ] Git branch strategy — feature branches, PR reviews, protected main
+- [ ] Agentic pipeline — Claude Code runs on branches, auto-opens PRs, CI gates merge
+
+## Next — Game Ideas
+
+- [ ] Brainstorm and pick Game 2 (genre, stack, scope)
+- [ ] Brainstorm and pick Game 3
+
 ## Later — Additional Games
 
-- [ ] Game 2 TBD
-- [ ] Game 3 TBD
+- [ ] Game 2 (TBD from ideas above)
+- [ ] Game 3 (TBD from ideas above)
