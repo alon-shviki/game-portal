@@ -25,33 +25,49 @@ Games have no standalone API server. Auth, scores, and leaderboard live in `port
 | Adding a new game to the portal | `.claude/rules/adding-a-game.md` |
 | Portal architecture, shared auth, nginx, Docker | `.claude/rules/architecture.md` |
 
+## Managed Repos
+
+This portal is the central hub — all work across every game is initiated from here.
+
+| Slug | Repo | Root |
+|------|------|------|
+| `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
+| `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
+
+When adding a new game, add a row here **and** update the `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue`.
+
 ## Issue Triage
 
 When the user says "what should I work on", "pick an issue", or similar:
 
-1. Run `gh issue list --repo <repo> --json number,title,labels,reactions,createdAt --limit 50`
-2. Score each issue:
-   - `bug` label → +3
-   - `priority:high` → +3, `priority:medium` → +2, `priority:low` → +1
-   - Each 👍 reaction → +1
-   - Every 7 days old → +1 (older = more urgent)
-3. Present the top 5 as a numbered list with score, labels, and one-line reason for ranking
-4. Wait for the user to pick a number, then implement it and run `auto-pr`
+1. Fetch from **all managed repos**:
+   ```bash
+   gh issue list --repo alon-shviki/game-portal --json number,title,labels,reactionGroups,createdAt --limit 50
+   gh issue list --repo alon-shviki/Bullet-Heaven --json number,title,labels,reactionGroups,createdAt --limit 50
+   ```
+2. Score: `bug` +3, `priority:high` +3, `priority:medium` +2, `priority:low` +1, each 👍 +1, every 7 days old +1
+3. Present top 5 with repo slug prefix, score, labels, one-line reason:
+   ```
+   1. [bh #4]     WORK-001: Web Worker setup — score 9  (bug, priority:high)
+   2. [bh #5]     WORK-002: Delegate physics — score 6  (enhancement, priority:high)
+   3. [portal #7] Pick Game 2              — score 3  (enhancement, priority:medium)
+   ```
+4. User picks → `start-issue <number> <slug>` (e.g. `start-issue 4 bh`)
 
-If no issues exist, say so and ask what to add as an issue first.
+If no issues exist across any repo, say so and ask what to create first.
 
 Whenever you would add a task or idea to `Roadmap.md`, create a GitHub issue instead:
-```
+```bash
 gh issue create --repo <repo> --title "..." --body "..." --label "enhancement,priority:medium"
 ```
-`Roadmap.md` stays as a high-level overview only — individual tasks live as issues.
+`Roadmap.md` stays as high-level overview only — individual tasks live as issues.
 
 ## Agentic Workflow
 
-**For issue-based work** (the default):
-1. `start-issue <number>` — creates an isolated worktree from fresh `main`, shows issue details
+**For issue-based work** (the default — works from portal for any game):
+1. `start-issue <number> <slug>` — creates worktree in the game's own repo, shows issue details
 2. Do all work inside the worktree path it prints
-3. `finish-issue` (run from inside the worktree) — runs tests, if pass: pushes PR, waits for CI, merges, deletes worktree
+3. `finish-issue` (run from inside the worktree) — tests → PR → CI → merge → delete worktree
 
 **For non-issue work:**
 - `git checkout -b feat/<name>` then `auto-pr "description"` when done
