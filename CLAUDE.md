@@ -3,7 +3,7 @@
 Top-level portal — multiple standalone browser games, one platform.
 
 ## Commands
-- **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env` (fill in secrets)
+- **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env && bash setup.sh` (fill in secrets, setup.sh symlinks agentic scripts)
 - **Everything** (recommended): `cd ~/Desktop/game && docker compose up --build`
   - Portal → http://localhost:3000
   - Bullet Heaven → http://localhost:8080  (images pulled from `ghcr.io/alon-shviki/bh-*`)
@@ -48,15 +48,17 @@ gh issue create --repo <repo> --title "..." --body "..." --label "enhancement,pr
 
 ## Agentic Workflow
 
-Every task follows this cycle — do not skip the last step:
+**For issue-based work** (the default):
+1. `start-issue <number>` — creates an isolated worktree from fresh `main`, shows issue details
+2. Do all work inside the worktree path it prints
+3. `finish-issue` (run from inside the worktree) — runs tests, if pass: pushes PR, waits for CI, merges, deletes worktree
 
-1. **Branch** — never commit directly to `main`. Create a feature branch: `git checkout -b feat/<short-name>`
-2. **Work** — make changes, test locally
-3. **Open PR** — run `auto-pr "short description of what this does"` when done
+**For non-issue work:**
+- `git checkout -b feat/<name>` then `auto-pr "description"` when done
 
-`auto-pr` stages everything, commits, pushes, and opens a GitHub PR in one command. CI runs automatically. The user reviews and merges.
+Never commit directly to `main`. The worktree is automatically cleaned up after merge.
 
-If the task spans multiple sessions, `auto-pr` is safe to re-run — it pushes an update and skips opening a duplicate PR.
+Scripts live in `.claude/scripts/` (version controlled). `setup.sh` symlinks them into `~/.local/bin` on each machine.
 
 ## Hard Rules
 - `.obsidian/` is gitignored everywhere — never commit it.

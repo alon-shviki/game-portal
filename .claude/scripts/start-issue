@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -e
+
+ISSUE="$1"
+[ -z "$ISSUE" ] && { echo "Usage: start-issue <number>"; exit 1; }
+
+REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+ROOT=$(git rev-parse --show-toplevel)
+SLUG=$(gh issue view "$ISSUE" --repo "$REPO" --json title -q '.title | ascii_downcase | gsub("[^a-z0-9]+"; "-") | .[0:35]')
+BRANCH="feat/issue-${ISSUE}-${SLUG}"
+WORKTREE="${ROOT}/.worktrees/issue-${ISSUE}"
+
+git fetch origin
+mkdir -p "${ROOT}/.worktrees"
+git worktree add "$WORKTREE" -b "$BRANCH" origin/main
+
+echo ""
+gh issue view "$ISSUE" --repo "$REPO"
+echo ""
+echo "Worktree: $WORKTREE"
+echo "Branch:   $BRANCH"

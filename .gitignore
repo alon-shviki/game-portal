@@ -21,3 +21,4 @@ obj/
 
 # Local Claude overrides (tokens, personal hooks — not shared rules)
 .claude/settings.local.json
+.worktrees/
