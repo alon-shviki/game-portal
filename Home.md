@@ -25,6 +25,7 @@ A single platform hosting multiple browser games. One account, shared leaderboar
 ## Tech Notes
 
 - [[Tech/Infrastructure]] — Docker Compose, nginx routing, CI/CD
+- [[Tech/Agentic Pipeline]] — issue triage, worktrees, auto-merge, scripts
 - [[Tech/Adding a New Game]] — step-by-step checklist for onboarding a new game
 
 ## Links
