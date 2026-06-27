@@ -25,6 +25,21 @@ Games have no standalone API server. Auth, scores, and leaderboard live in `port
 | Adding a new game to the portal | `.claude/rules/adding-a-game.md` |
 | Portal architecture, shared auth, nginx, Docker | `.claude/rules/architecture.md` |
 
+## Issue Triage
+
+When the user says "what should I work on", "pick an issue", or similar:
+
+1. Run `gh issue list --repo <repo> --json number,title,labels,reactions,createdAt --limit 50`
+2. Score each issue:
+   - `bug` label → +3
+   - `priority:high` → +3, `priority:medium` → +2, `priority:low` → +1
+   - Each 👍 reaction → +1
+   - Every 7 days old → +1 (older = more urgent)
+3. Present the top 5 as a numbered list with score, labels, and one-line reason for ranking
+4. Wait for the user to pick a number, then implement it and run `auto-pr`
+
+If no issues exist, say so and ask what to add as an issue first.
+
 ## Agentic Workflow
 
 Every task follows this cycle — do not skip the last step:
