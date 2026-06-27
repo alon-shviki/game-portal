@@ -40,6 +40,12 @@ When the user says "what should I work on", "pick an issue", or similar:
 
 If no issues exist, say so and ask what to add as an issue first.
 
+Whenever you would add a task or idea to `Roadmap.md`, create a GitHub issue instead:
+```
+gh issue create --repo <repo> --title "..." --body "..." --label "enhancement,priority:medium"
+```
+`Roadmap.md` stays as a high-level overview only — individual tasks live as issues.
+
 ## Agentic Workflow
 
 Every task follows this cycle — do not skip the last step:
