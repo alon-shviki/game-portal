@@ -24,8 +24,8 @@
 
 ## Next — Agentic Git Branch Management & Pipelines
 
-- [ ] Git branch strategy — feature branches, PR reviews, protected main
-- [ ] Agentic pipeline — Claude Code runs on branches, auto-opens PRs, CI gates merge
+- [x] Git branch strategy — feature branches, PR reviews, protected main
+- [x] Agentic pipeline — Claude Code runs on branches, auto-opens PRs, CI gates merge
 
 ## Next — Game Ideas
 
