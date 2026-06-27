@@ -42,7 +42,8 @@ finish-issue
 4. Opens a PR with `Closes #<N>` in the body
 5. Waits for CI (`gh pr checks --watch`)
 6. If CI green: merges PR (squash), deletes remote branch, removes worktree
-7. If CI fails: stops, leaves PR open for manual fix
+7. Pulls `origin/main` into the repo root so main is up to date
+8. If CI fails: stops, leaves PR open for manual fix
 
 ## auto-pr
 

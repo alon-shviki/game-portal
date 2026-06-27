@@ -34,7 +34,9 @@ echo "Waiting for CI..."
 gh pr checks "$PR_NUM" --watch
 gh pr merge "$PR_NUM" --squash --delete-branch
 
-# Clean up worktree
+# Clean up worktree and sync main
 cd "$MAIN_REPO"
 git worktree remove "$WORKTREE" --force
-echo "Done — worktree removed."
+git checkout main
+git pull origin main
+echo "Done — worktree removed, main is up to date."
