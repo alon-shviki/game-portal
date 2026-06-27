@@ -44,6 +44,17 @@ Never commit directly to `main`.
 
 When `start-issue` prints a `LOAD GAME CONTEXT` block, Claude **must** read every file listed in it before writing a single line of code. This loads the game's rules, pipeline, hard constraints, and architecture into the current session — replacing the need to open a separate Claude Code window for that game.
 
+**Agent name mapping when working from portal** — game pipelines reference agent names without a prefix. Use the prefixed versions registered in this session:
+
+| Game pipeline says | Use from portal |
+|--------------------|-----------------|
+| `qa-reviewer` | `bh-qa-reviewer` |
+| `test-generator` | `bh-test-generator` |
+| `docs-generator` | `bh-docs-generator` |
+| `playwright-e2e` | `bh-playwright-e2e` |
+
+When a new game is added, its agents are copied to `.claude/agents/<slug>-<agent>.md` here and added to this table.
+
 ## Auto-Issue Rule
 
 Spot a problem outside the current task → create a GitHub issue immediately, then continue.
