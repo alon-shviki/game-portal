@@ -17,14 +17,9 @@ Write a `CLAUDE.md` at the root — see BH's as a template. Must include:
 - Hard rules for this game's architecture
 - The standard **Issue Triage**, **Agentic Workflow**, and **Auto-Issue Rule** sections (copy from BH's `CLAUDE.md`)
 
-Create `setup.sh` at the repo root — see BH's as a template. It must:
-- Symlink shared scripts from portal (`~/Desktop/game/.claude/scripts/`) into `~/.local/bin/`
-- Symlink any game-specific scripts from `.claude/scripts/` into `~/.local/bin/`
-- Print a helpful error if portal is not cloned
-
 Create `.claude/scripts/` for any game-specific scripts (may be empty at first).
 
-Add the game to `REPOS`/`ROOTS` in `~/Desktop/game/.claude/scripts/start-issue` so `start-issue <N>` auto-detects it.
+Add the game to `REPOS`/`ROOTS` in both `.claude/scripts/start-issue` and `.claude/scripts/start-task` in the portal repo so `start-issue <N>` and `start-task <name>` auto-detect it.
 
 ## 2. Game Repo Gitignore
 

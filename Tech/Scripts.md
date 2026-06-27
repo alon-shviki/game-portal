@@ -1,6 +1,6 @@
 # Agentic Scripts
 
-Three scripts live in `.claude/scripts/` (version-controlled) and are symlinked into `~/.local/bin` via `setup.sh`.
+All scripts live in `.claude/scripts/` and are version-controlled in the portal repo. Run them with `bash .claude/scripts/<script>` or by path. No machine-local setup required.
 
 ## start-issue
 
@@ -26,11 +26,22 @@ start-issue <number>           # no slug: auto-detects from git remote, then sea
 | `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
 | `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
 
-To add a new game: add a row above **and** update `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue`.
+To add a new game: add a row above **and** update `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue` and `.claude/scripts/start-task`.
+
+## start-task
+
+Creates a worktree for non-issue work (docs, config, small refactors) that doesn't have a GitHub issue.
+
+```bash
+start-task <branch-name> <slug>    # e.g. start-task update-nginx-config portal
+start-task <branch-name>           # auto-detects repo from git remote
+```
+
+**What it does:** same as `start-issue` but without an issue number. Creates `.worktrees/task-<name>/` on a `feat/<name>` branch.
 
 ## finish-issue
 
-Run from **inside** the worktree when work is complete.
+Run from **inside** the worktree when issue work is complete.
 
 ```bash
 cd ~/Desktop/Bullet-Heaven/.worktrees/issue-4
@@ -43,39 +54,25 @@ finish-issue
 3. Pushes branch to `origin`
 4. Opens a PR with `Closes #<N>` in the body
 5. Waits for CI (`gh pr checks --watch`)
-6. If CI green: merges PR (squash), deletes remote branch, removes worktree
-7. Pulls `origin/main` into the repo root so main is up to date
-8. If CI fails: stops, leaves PR open for manual fix
+6. If CI green: merges PR (squash), deletes remote branch, removes worktree, pulls `origin/main`
+7. If CI fails: stops, leaves PR open for manual fix
 
 ## auto-pr
 
-For non-issue work (docs, refactors, config changes).
+Run from **inside** a worktree (created by `start-task`) when non-issue work is done.
 
 ```bash
-git checkout -b feat/<name>
-# make changes
-auto-pr "Short description of what this does"
+cd ~/Desktop/game/.worktrees/task-update-nginx-config
+auto-pr "Update nginx config to add cache headers"
 ```
 
-**What it does:** stages everything, commits, pushes, opens PR. Does **not** auto-merge — you review and merge manually.
+**Steps:**
+1. Commits all changes
+2. Pushes branch to `origin`
+3. Opens a PR (does **not** auto-merge — review manually or wait for CI)
+4. Removes the worktree and pulls `origin/main`
 
 If a PR is already open for the branch, it pushes an update and skips opening a duplicate.
-
-## New Machine Setup
-
-```bash
-# Clone portal (source of truth for shared scripts)
-git clone git@github.com:alon-shviki/game-portal.git ~/Desktop/game
-bash ~/Desktop/game/setup.sh
-
-# Each game also has its own setup.sh — run after portal is cloned
-git clone git@github.com:alon-shviki/Bullet-Heaven.git ~/Desktop/Bullet-Heaven
-bash ~/Desktop/Bullet-Heaven/setup.sh
-```
-
-Portal's `setup.sh` symlinks the three shared scripts into `~/.local/bin/`. Each game's `setup.sh` does the same (linking from portal) plus any game-specific scripts. Running a game's `setup.sh` without the portal cloned gives a clear error with clone instructions.
-
-Each new game added to the platform needs its own `setup.sh` — see `[[Tech/Adding a New Game]]`.
 
 ## Related
 
