@@ -7,9 +7,11 @@ Three scripts live in `.claude/scripts/` (version-controlled) and are symlinked 
 Creates an isolated git worktree for working on a GitHub issue.
 
 ```bash
-start-issue <number> <slug>    # e.g. start-issue 4 bh
-start-issue <number>           # auto-detects repo (fails if ambiguous)
+start-issue <number> <slug>    # explicit — e.g. start-issue 4 bh
+start-issue <number>           # no slug: auto-detects from git remote, then searches all repos
 ```
+
+**Auto-detect order:** if the current directory is inside a managed repo (matched by `git remote get-url origin`), that repo is used with no API call. Useful when Claude Code is opened directly in a game directory.
 
 **What it does:**
 1. Fetches `origin/main` of the target repo
@@ -62,11 +64,18 @@ If a PR is already open for the branch, it pushes an update and skips opening a 
 ## New Machine Setup
 
 ```bash
+# Clone portal (source of truth for shared scripts)
 git clone git@github.com:alon-shviki/game-portal.git ~/Desktop/game
 bash ~/Desktop/game/setup.sh
+
+# Each game also has its own setup.sh — run after portal is cloned
+git clone git@github.com:alon-shviki/Bullet-Heaven.git ~/Desktop/Bullet-Heaven
+bash ~/Desktop/Bullet-Heaven/setup.sh
 ```
 
-`setup.sh` symlinks all scripts from `.claude/scripts/` into `~/.local/bin/`.
+Portal's `setup.sh` symlinks the three shared scripts into `~/.local/bin/`. Each game's `setup.sh` does the same (linking from portal) plus any game-specific scripts. Running a game's `setup.sh` without the portal cloned gives a clear error with clone instructions.
+
+Each new game added to the platform needs its own `setup.sh` — see `[[Tech/Adding a New Game]]`.
 
 ## Related
 

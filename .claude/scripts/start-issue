@@ -20,6 +20,14 @@ SLUG="${2:-}"
 
 [ -z "$ISSUE" ] && { echo "Usage: start-issue <number> [repo-slug]"; echo "Slugs: ${!REPOS[*]}"; exit 1; }
 
+# Auto-detect slug from the current repo's git remote (fast path, no API call)
+if [ -z "$SLUG" ]; then
+  CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null | sed 's|.*[:/]\([^/]*/[^/]*\)$|\1|; s|\.git$||')
+  for key in "${!REPOS[@]}"; do
+    if [ "${REPOS[$key]}" = "$CURRENT_REMOTE" ]; then SLUG="$key"; break; fi
+  done
+fi
+
 # Resolve repo + root
 if [ -n "$SLUG" ]; then
   REPO="${REPOS[$SLUG]:-$SLUG}"
