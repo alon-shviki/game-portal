@@ -1,7 +1,7 @@
 # Game Portal — Claude Instructions
 
 ## Commands
-- **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env && bash setup.sh`
+- **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env`
 - **Full stack**: `cd ~/Desktop/game && docker compose up --build`
   - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:8080
 
@@ -36,7 +36,7 @@
 
 **Do work**: `start-issue <number> <slug>` → work in the worktree → `finish-issue`. See `Tech/Scripts.md`.
 
-**Non-issue work**: `git checkout -b feat/<name>` → `auto-pr "description"`.
+**Non-issue work**: `start-task <name> <slug>` → work in the worktree → `auto-pr "description"`.
 
 Never commit directly to `main`.
 
