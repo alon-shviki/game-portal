@@ -60,6 +60,18 @@ Never commit directly to `main`. The worktree is automatically cleaned up after 
 
 Scripts live in `.claude/scripts/` (version controlled). `setup.sh` symlinks them into `~/.local/bin` on each machine.
 
+## Auto-Issue Rule
+
+When you spot a bug, problem, performance issue, or architectural concern **outside the current task** — create a GitHub issue immediately, then continue with the task. Do not fix it inline.
+
+```bash
+gh issue create --repo <repo> --title "..." \
+  --label "bug,priority:medium" \
+  --body $'**What\'s the problem:**\n\n**Why it matters:**\n\n**Possible approaches:**'
+```
+
+Use `bug` for clear breakage, `question` for decisions/discussion, `enhancement` for improvements. Always set a priority label.
+
 ## Hard Rules
 - `.obsidian/` is gitignored everywhere — never commit it.
 - `Games/<game-folder>` entries are symlinks to game repos — never replace with copies.

@@ -1,0 +1,98 @@
+# Agentic Pipeline
+
+How Claude Code works on this project — from picking an issue to merging a fix, without manual branch management or PR wrangling.
+
+## Overview
+
+```
+GitHub Issues  →  triage  →  worktree  →  tests  →  CI  →  merge
+     ↑                                                        ↓
+  auto-filed                                           worktree deleted
+```
+
+Claude handles the full cycle. You pick what to work on and approve the merge.
+
+## Issue Lifecycle
+
+### Filing issues
+Three templates available on every repo:
+- **Bug** — auto-labels `bug, priority:medium`
+- **Feature** — auto-labels `enhancement, priority:medium`
+- **Problem / Discussion** — auto-labels `question, priority:medium`
+
+Anyone (you, Claude, external contributors) can open an issue. Claude also auto-files issues whenever it spots a problem outside the current task.
+
+### Triage
+Say "what should I work on?" — Claude fetches all open issues and scores them:
+
+| Signal | Points |
+|--------|--------|
+| `bug` label | +3 |
+| `priority:high` | +3 |
+| `priority:medium` | +2 |
+| `priority:low` | +1 |
+| Each 👍 reaction | +1 |
+| Every 7 days old | +1 |
+
+Returns top 5 ranked with scores and reasoning. You pick a number.
+
+## Working on an Issue
+
+### 1. Start
+```bash
+start-issue <number>
+```
+Creates an isolated git worktree from fresh `origin/main`, prints the path. Claude works entirely inside the worktree — main working directory is untouched.
+
+### 2. Work
+Claude reads the issue, edits files in the worktree, runs local checks. If it finds an unrelated problem, it opens a new GitHub issue and continues.
+
+### 3. Finish
+```bash
+finish-issue   # run from inside the worktree
+```
+Steps:
+1. Runs tests (auto-detects `.Tests.csproj`)
+2. If tests fail → stops, reports failure
+3. If pass → commits, pushes branch, opens PR (links `Closes #N`)
+4. Waits for CI (`gh pr checks --watch`)
+5. If CI green → merges PR → deletes remote branch → removes worktree
+6. If CI fails → stops, leaves PR open for manual fix
+
+### Non-issue work
+```bash
+git checkout -b feat/<name>
+# ... make changes ...
+auto-pr "description"
+```
+`auto-pr` stages, commits, pushes, opens PR. You merge manually.
+
+## Scripts
+
+All scripts live in `.claude/scripts/` (versioned). Symlinked to `~/.local/bin/` via `setup.sh`.
+
+| Script | What it does |
+|--------|-------------|
+| `start-issue <n>` | Creates worktree + branch from `origin/main` |
+| `finish-issue` | Tests → push → PR → wait CI → merge → delete worktree |
+| `auto-pr "msg"` | Commit + push + open PR (no worktree, no auto-merge) |
+
+**New machine setup:**
+```bash
+git clone git@github.com:alon-shviki/game-portal.git ~/Desktop/game
+bash ~/Desktop/game/setup.sh
+```
+
+## CI / Branch Protection
+
+Both `game-portal` and `Bullet-Heaven`:
+- Direct pushes to `main` blocked
+- PRs require the `build` check to pass
+- `build` job: compile + run tests
+- `push-image` job: runs only on merge to `main`, pushes to GHCR
+
+New games must follow the same pattern — see `.claude/rules/adding-a-game.md`.
+
+## Adding a New Project
+
+See `.claude/rules/adding-a-game.md` — it includes the full GitHub setup (labels, templates, CI, branch protection) so every new game gets this pipeline from day one.
