@@ -34,11 +34,15 @@
 
 **Pick work**: say "what should I work on" → Claude fetches issues from all managed repos, scores and ranks them, you pick one. See `Tech/Agentic Pipeline.md` for scoring rules.
 
-**Do work**: `start-issue <number> <slug>` → work in the worktree → `finish-issue`. See `Tech/Scripts.md`.
+**Do work**: `start-issue <number> <slug>` → **read every file in the LOAD GAME CONTEXT block** → work in the worktree → `finish-issue`. See `Tech/Scripts.md`.
 
 **Non-issue work**: `start-task <name> <slug>` → work in the worktree → `auto-pr "description"`.
 
 Never commit directly to `main`.
+
+## Game Context Rule
+
+When `start-issue` prints a `LOAD GAME CONTEXT` block, Claude **must** read every file listed in it before writing a single line of code. This loads the game's rules, pipeline, hard constraints, and architecture into the current session — replacing the need to open a separate Claude Code window for that game.
 
 ## Auto-Issue Rule
 
@@ -64,5 +68,4 @@ Adding a new game: add a row here + update `REPOS`/`ROOTS` in `.claude/scripts/s
 - `.obsidian/` is gitignored everywhere — never commit it
 - `Games/<game-folder>` entries are symlinks — never replace with copies
 - Game-specific notes live in the game's own `Notes/` — don't duplicate here
-- Before working on a specific game, read that game's `CLAUDE.md`
 - Never add auth endpoints or a scores DB to a game — portal owns that
