@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Usage: auto-pr "optional PR title"
+# Commits all changes, pushes to a feature branch, opens a PR.
+# Safe to run multiple times — skips if nothing to commit or PR already open.
+
+set -e
+
+TITLE="${1:-}"
+
+# Nothing to do?
+if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+  echo "auto-pr: no changes, nothing to do"
+  exit 0
+fi
+
+BRANCH=$(git branch --show-current)
+DEFAULT=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||' || echo "main")
+
+# If on the default branch, create a feature branch
+if [ "$BRANCH" = "$DEFAULT" ] || [ -z "$BRANCH" ]; then
+  BRANCH="claude/$(date +%Y%m%d-%H%M%S)"
+  git checkout -b "$BRANCH"
+fi
+
+git add -A
+git commit -m "${TITLE:-claude: auto-commit}"
+git push -u origin "$BRANCH"
+
+# Open PR (skip if already open)
+if gh pr view --json state -q .state 2>/dev/null | grep -q "OPEN"; then
+  echo "auto-pr: PR already open, pushed update"
+else
+  if [ -n "$TITLE" ]; then
+    gh pr create --title "$TITLE" --body "Opened by Claude Code." --base "$DEFAULT"
+  else
+    gh pr create --fill --base "$DEFAULT"
+  fi
+fi
