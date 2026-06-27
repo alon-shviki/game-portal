@@ -1,21 +1,56 @@
 #!/usr/bin/env bash
+# Usage: start-issue <number> [repo-slug]
+# repo-slug: bh, portal, or full "owner/name"
+# With no slug, searches all managed repos (errors if ambiguous).
 set -e
 
-ISSUE="$1"
-[ -z "$ISSUE" ] && { echo "Usage: start-issue <number>"; exit 1; }
+# ── Managed repos — add new games here ───────────────────────────────────────
+declare -A REPOS=(
+  [portal]="alon-shviki/game-portal"
+  [bh]="alon-shviki/Bullet-Heaven"
+)
+declare -A ROOTS=(
+  [portal]="$HOME/Desktop/game"
+  [bh]="$HOME/Desktop/Bullet-Heaven"
+)
+# ─────────────────────────────────────────────────────────────────────────────
 
-REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
-ROOT=$(git rev-parse --show-toplevel)
-SLUG=$(gh issue view "$ISSUE" --repo "$REPO" --json title -q '.title | ascii_downcase | gsub("[^a-z0-9]+"; "-") | .[0:35]')
-BRANCH="feat/issue-${ISSUE}-${SLUG}"
+ISSUE="$1"
+SLUG="${2:-}"
+
+[ -z "$ISSUE" ] && { echo "Usage: start-issue <number> [repo-slug]"; echo "Slugs: ${!REPOS[*]}"; exit 1; }
+
+# Resolve repo + root
+if [ -n "$SLUG" ]; then
+  REPO="${REPOS[$SLUG]:-$SLUG}"
+  ROOT="${ROOTS[$SLUG]:-$HOME/Desktop/$SLUG}"
+else
+  FOUND_REPO=""; FOUND_ROOT=""
+  for key in "${!REPOS[@]}"; do
+    if gh issue view "$ISSUE" --repo "${REPOS[$key]}" &>/dev/null; then
+      if [ -n "$FOUND_REPO" ]; then
+        echo "Issue #$ISSUE exists in multiple repos — be specific: start-issue $ISSUE <slug>"
+        echo "Slugs: ${!REPOS[*]}"; exit 1
+      fi
+      FOUND_REPO="${REPOS[$key]}"; FOUND_ROOT="${ROOTS[$key]}"
+    fi
+  done
+  [ -z "$FOUND_REPO" ] && { echo "Issue #$ISSUE not found in any managed repo."; exit 1; }
+  REPO="$FOUND_REPO"; ROOT="$FOUND_ROOT"
+fi
+
+TITLE_SLUG=$(gh issue view "$ISSUE" --repo "$REPO" --json title -q '.title | ascii_downcase | gsub("[^a-z0-9]+"; "-") | .[0:35]')
+BRANCH="feat/issue-${ISSUE}-${TITLE_SLUG}"
 WORKTREE="${ROOT}/.worktrees/issue-${ISSUE}"
 
-git fetch origin
+git -C "$ROOT" fetch origin
 mkdir -p "${ROOT}/.worktrees"
-git worktree add "$WORKTREE" -b "$BRANCH" origin/main
+git -C "$ROOT" worktree add "$WORKTREE" -b "$BRANCH" origin/main
 
 echo ""
 gh issue view "$ISSUE" --repo "$REPO"
 echo ""
+echo "Repo:     $REPO"
 echo "Worktree: $WORKTREE"
 echo "Branch:   $BRANCH"
+echo "When done: cd \"$WORKTREE\" && finish-issue"
