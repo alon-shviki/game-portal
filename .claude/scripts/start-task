@@ -40,3 +40,13 @@ echo "Repo:     ${REPOS[$SLUG]}"
 echo "Worktree: $WORKTREE"
 echo "Branch:   $BRANCH"
 echo "When done: cd \"$WORKTREE\" && auto-pr \"description\""
+
+if [ "$SLUG" != "portal" ]; then
+  echo ""
+  echo "━━━ LOAD GAME CONTEXT (read all before touching any code) ━━━"
+  echo "  $ROOT/CLAUDE.md"
+  for f in "$ROOT/.claude/rules/"*.md; do
+    [ -e "$f" ] && echo "  $f"
+  done
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+fi
