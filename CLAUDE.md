@@ -25,6 +25,18 @@ Games have no standalone API server. Auth, scores, and leaderboard live in `port
 | Adding a new game to the portal | `.claude/rules/adding-a-game.md` |
 | Portal architecture, shared auth, nginx, Docker | `.claude/rules/architecture.md` |
 
+## Agentic Workflow
+
+Every task follows this cycle — do not skip the last step:
+
+1. **Branch** — never commit directly to `main`. Create a feature branch: `git checkout -b feat/<short-name>`
+2. **Work** — make changes, test locally
+3. **Open PR** — run `auto-pr "short description of what this does"` when done
+
+`auto-pr` stages everything, commits, pushes, and opens a GitHub PR in one command. CI runs automatically. The user reviews and merges.
+
+If the task spans multiple sessions, `auto-pr` is safe to re-run — it pushes an update and skips opening a duplicate PR.
+
 ## Hard Rules
 - `.obsidian/` is gitignored everywhere — never commit it.
 - `Games/<game-folder>` entries are symlinks to game repos — never replace with copies.
