@@ -49,5 +49,14 @@ services:
     depends_on:
       - portal-auth
 
+  # ── Orbit Break ──────────────────────────────────────────────────────────────
+
+  orbit-break-client:
+    image: ghcr.io/alon-shviki/orbit-break-client:latest
+    ports:
+      - "8081:80"
+    depends_on:
+      - portal-auth
+
 volumes:
   pgdata:
