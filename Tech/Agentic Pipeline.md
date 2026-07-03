@@ -83,6 +83,10 @@ git clone git@github.com:alon-shviki/game-portal.git ~/Desktop/game
 bash ~/Desktop/game/setup.sh
 ```
 
+## Game Sub-Agent Pipelines
+
+Each game keeps its own QA/test/docs/e2e sub-agents in its own repo (e.g. Bullet-Heaven's `.claude/agents/qa-reviewer.md`, `test-generator.md`, `docs-generator.md`, `playwright-e2e.md`, spawned per `.claude/rules/pipeline.md`). They are **not** copied into the portal — a portal session does those pipeline steps inline instead of spawning sub-agents (see `CLAUDE.md` → Game Context Rule). Portal previously had `bh-`-prefixed copies (PR #17); these were reverted (PR #19) since they weren't used from portal. Verified 2026-07-03: with the portal-side copies gone, Bullet-Heaven's pipeline still spawns correctly stand-alone (agent files present, `pipeline.md` references match their unprefixed names, no leftover `bh-` references anywhere in that repo).
+
 ## CI / Branch Protection
 
 Both `game-portal` and `Bullet-Heaven`:
