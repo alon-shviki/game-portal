@@ -7,6 +7,7 @@ A single platform hosting multiple browser games. One account, shared leaderboar
 | Game | Status | Stack | Port |
 |------|--------|-------|------|
 | [[Games/Bullet Heaven]] | ✅ Live | Blazor WASM | :8080 |
+| [[Games/Orbit Break]] | ⏳ Docs scaffold only | Blazor WASM (planned) | TBD |
 
 ## Portal
 
