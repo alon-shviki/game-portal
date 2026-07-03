@@ -29,10 +29,10 @@
 
 ## Next — Game Ideas
 
-- [ ] Brainstorm and pick Game 2 (genre, stack, scope)
+- [x] Brainstorm and pick Game 2 (genre, stack, scope) → Orbit Break (physics arena/breakout hybrid, Blazor WASM + Canvas, ambitious scope) — see [[Design/Orbit Break]]
 - [ ] Brainstorm and pick Game 3
 
 ## Later — Additional Games
 
-- [ ] Game 2 (TBD from ideas above)
+- [ ] Game 2 — Orbit Break (build not started)
 - [ ] Game 3 (TBD from ideas above)
