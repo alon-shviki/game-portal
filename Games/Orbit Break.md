@@ -2,8 +2,8 @@
 
 > Physics arena/breakout hybrid. Launch balls that curve around gravity wells to shatter procedurally generated block constellations, chaining combos for an ever-escalating high score.
 
-**Repo:** `~/Desktop/orbit-break` (docs scaffold only — no GitHub repo or code yet)
-**Play:** not yet buildable
+**Repo:** [alon-shviki/orbit-break](https://github.com/alon-shviki/orbit-break)
+**Play:** http://localhost:8081 (via `docker compose up`) or `dotnet run --project OrbitBreak.Client`
 
 ---
 
@@ -12,13 +12,13 @@
 - Physics-driven breakout: balls curve around gravity wells instead of bouncing off flat walls.
 - Chaining a launch through multiple wells stacks a combo multiplier.
 - Difficulty escalates forever via denser, harder constellations — pure high-score chase.
-- Score will be submitted to the portal leaderboard on run end, same as Bullet Heaven.
+- Score submitted to the portal leaderboard on run end, same as Bullet Heaven.
 
-## Tech Stack (planned)
+## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Game client | Blazor WASM (.NET) |
+| Game client | Blazor WASM (.NET 10) |
 | Rendering | HTML5 Canvas via `Blazor.Extensions.Canvas` |
 | Game loop | `requestAnimationFrame` → JS interop → C# tick |
 | Auth / Scores / Leaderboard | Portal auth server (shared across all games) |
@@ -31,10 +31,10 @@ No standalone Orbit Break API server or database, matching every other game on t
 |------|--------|
 | Concept brainstorm | ✅ Done — see [[Design/Orbit Break]] |
 | Docs scaffold (CLAUDE.md, Obsidian vault, Notes/) | ✅ Done |
-| GitHub repo, CI, branch protection | ⏳ Not started |
-| Blazor WASM project scaffold | ⏳ Not started |
-| Core game loop | ⏳ Not started |
-| docker-compose wiring | ⏳ Not started |
+| GitHub repo, CI, branch protection | ✅ Done |
+| Blazor WASM project scaffold | ✅ Done |
+| Core game loop | ✅ Done — wells, blocks, combo, tiers (feel-tuning pending) |
+| docker-compose wiring | ✅ Done — orbit-break-client on :8081 |
 
 ---
 
