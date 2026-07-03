@@ -19,8 +19,6 @@ Write a `CLAUDE.md` at the root — see BH's as a template. Must include:
 
 Create `.claude/scripts/` for any game-specific scripts (may be empty at first).
 
-Create `.claude/agents/` with agents for the game's pipeline (qa-reviewer, test-generator, docs-generator, and any game-specific ones). Copy those agent files to the portal's `.claude/agents/` with a `<slug>-` prefix (e.g. `bh-qa-reviewer.md`) and add them to the agent name mapping table in the portal's `CLAUDE.md`.
-
 Add the game to `REPOS`/`ROOTS` in both `.claude/scripts/start-issue` and `.claude/scripts/start-task` in the portal repo so `start-issue <N>` and `start-task <name>` auto-detect it.
 
 ## 2. Game Repo Gitignore
