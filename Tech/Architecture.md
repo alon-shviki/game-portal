@@ -27,7 +27,7 @@ Player opens a game
   → game sends Authorization: Bearer <token> on API calls
   → game nginx proxies to portal-auth:5001
   → portal-auth validates + records score
-  → "✕ Exit to Portal" button (portal shell, over the iframe) returns to the games grid
+  → a slim portal top-bar above the iframe holds "← Exit to Portal" (+ the game's name); the iframe fills the space below, so the bar never overlaps the game's own HUD
 ```
 
 JWT claims: `sub` (user ID), `unique_name` (username), `exp` (30 days).
