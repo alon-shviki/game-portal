@@ -3,13 +3,14 @@
 ## Commands
 - **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env`
 - **Full stack**: `cd ~/Desktop/game && docker compose up --build`
-  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:8080
+  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:8080 · Orbit Break → http://localhost:8081
 
 ## Games
 
 | Game | Slug | Root | Status |
 |------|------|------|--------|
 | Bullet Heaven | `bh` | `~/Desktop/Bullet-Heaven` | Active |
+| Orbit Break | `ob` | `~/Desktop/orbit-break` | Active |
 
 ## Read Before Working
 
@@ -20,6 +21,7 @@
 | Adding a new game | `Tech/Adding a New Game.md` |
 | Agentic scripts (start-issue, finish-issue, auto-pr) | `Tech/Scripts.md` |
 | Full agentic workflow | `Tech/Agentic Pipeline.md` |
+| `.claude/` layout — skills, commands, hooks | `Tech/Claude Setup.md` |
 
 ## Documentation Rule
 
@@ -32,7 +34,7 @@
 
 ## Workflow
 
-**Pick work**: say "what should I work on" → Claude fetches issues from all managed repos, scores and ranks them, you pick one. See `Tech/Agentic Pipeline.md` for scoring rules.
+**Pick work**: say "what should I work on" (or `/pick-work`) → Claude fetches issues from all managed repos, scores and ranks them, you pick one. See `Tech/Agentic Pipeline.md` for scoring rules.
 
 **Do work**: `start-issue <number> <slug>` → **read every file in the LOAD GAME CONTEXT block** → work in the worktree → `finish-issue`. See `Tech/Scripts.md`.
 
@@ -61,8 +63,9 @@ Use `bug` for breakage · `question` for decisions · `enhancement` for improvem
 |------|------|------|
 | `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
 | `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
+| `ob` | `alon-shviki/orbit-break` | `~/Desktop/orbit-break` |
 
-Adding a new game: add a row here + update `REPOS`/`ROOTS` in `.claude/scripts/start-issue`.
+Adding a new game: add a row here + update `REPOS`/`ROOTS` in `.claude/scripts/start-issue` and `.claude/scripts/start-task`.
 
 ## Hard Rules
 - `.obsidian/` is gitignored everywhere — never commit it
