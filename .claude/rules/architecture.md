@@ -26,7 +26,7 @@ Player opens a game
   → portal auth server validates JWT, records scores
 ```
 
-JWT claims: `sub` (user ID), `unique_name` (username), `exp` (24h).
+JWT claims: `sub` (user ID), `unique_name` (username), `exp` (30 days — long-lived so a docker restart doesn't force re-login).
 
 Game clients expose **no** `/register` or `/login`. Auth is portal-only.
 

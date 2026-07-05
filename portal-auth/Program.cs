@@ -141,7 +141,7 @@ static string BuildToken(User user, string jwtKey)
 {
     var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-    var exp = DateTimeOffset.UtcNow.AddHours(24).ToUnixTimeSeconds();
+    var exp = DateTimeOffset.UtcNow.AddDays(30).ToUnixTimeSeconds(); // long-lived so a docker restart doesn't force re-login
     var claims = new[]
     {
         new Claim(JwtRegisteredClaimNames.Sub,        user.Id.ToString()),
