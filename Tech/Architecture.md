@@ -22,13 +22,17 @@ Player logs in at portal
   → stored in localStorage["jwt"]
 
 Player opens a game
-  → game reads localStorage["jwt"]
-  → sends Authorization: Bearer <token> on API calls
+  → portal loads the game in an embedded <iframe> (runs inside the portal, no new tab)
+  → token passed to the game via URL hash (#portal_token=…); game saves it to its own localStorage
+  → game sends Authorization: Bearer <token> on API calls
   → game nginx proxies to portal-auth:5001
   → portal-auth validates + records score
+  → "✕ Exit to Portal" button (portal shell, over the iframe) returns to the games grid
 ```
 
-JWT claims: `sub` (user ID), `unique_name` (username), `exp` (24h).
+JWT claims: `sub` (user ID), `unique_name` (username), `exp` (30 days).
+
+**Persistent login:** the token is long-lived (30 days) and lives in the browser's `localStorage`, the signing key (`JWT_KEY`) is fixed in `.env`, and the user table sits on the `pgdata` volume — so a `docker compose restart` / `up` (without `-v`) never forces a re-login. Only wiping the volume (`down -v`) or 30-day expiry logs you out.
 
 ## Portal Auth Endpoints
 

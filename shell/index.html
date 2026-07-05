@@ -141,7 +141,7 @@
       font-size: 18px;
       font-weight: 500;
     }
-    .card-tagline { font-size: 13px; color: var(--muted); margin-top: -8px; }
+    .card-tagline { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
     .card-score {
       font-family: 'JetBrains Mono', monospace;
@@ -337,9 +337,43 @@
     .rank-bronze { color: #c2845a;     font-weight: 700; }
 
     .lb-empty { color: var(--muted); font-size: 14px; text-align: center; padding: 32px 0; }
+
+    /* ── Embedded game frame ── */
+    .game-frame {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: #05060f;
+    }
+    .game-frame.open { display: block; }
+    .game-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .game-exit {
+      position: fixed;
+      top: 14px; right: 16px;
+      z-index: 301;
+      padding: 8px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      background: rgba(13,13,15,0.75);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .game-exit:hover { background: rgba(239,68,68,0.9); border-color: var(--danger); }
   </style>
 </head>
 <body>
+
+<!-- Embedded game frame (runs the game inside the portal) -->
+<div class="game-frame" id="gameFrame">
+  <button class="game-exit" onclick="closeGame()">✕ Exit to Portal</button>
+  <iframe id="gameIframe" title="Game" allow="fullscreen"></iframe>
+</div>
 
 <header>
   <a class="logo" href="/">My<span>Games</span></a>
@@ -557,7 +591,13 @@
   function openGame(baseUrl) {
     const token = localStorage.getItem('jwt');
     const url = token ? `${baseUrl}/#portal_token=${encodeURIComponent(token)}` : baseUrl;
-    window.open(url, '_blank');
+    document.getElementById('gameIframe').src = url;
+    document.getElementById('gameFrame').classList.add('open');
+  }
+
+  function closeGame() {
+    document.getElementById('gameFrame').classList.remove('open');
+    document.getElementById('gameIframe').src = 'about:blank'; // stop the game loop
   }
 
   // ── Leaderboard ───────────────────────────────────────────────────────────
