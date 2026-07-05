@@ -68,5 +68,6 @@ All via `.env` (gitignored) — never hardcoded.
 
 - Portal shell: built (`shell/index.html`) — auth + leaderboard page
 - Portal auth server: built (`portal-auth/`) — auth + scores + leaderboard endpoints
-- Docker Compose: `docker-compose.yml` — portal nginx (3000), portal-auth, postgres, bh-client (8080)
+- Docker Compose: `docker-compose.yml` — portal nginx (3000), portal-auth, postgres, bh-client (8080), orbit-break-client (8081)
 - Bullet Heaven: game client image on GHCR (`ghcr.io/alon-shviki/bh-client`) — nginx proxies scores/leaderboard to portal-auth; no standalone API server
+- Orbit Break: game client image on GHCR (`ghcr.io/alon-shviki/orbit-break-client`) — Blazor WASM, same client-only contract (slug `orbit-break`)
