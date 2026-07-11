@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Usage: auto-pr "PR title"
+# Usage: auto-pr "PR title" ["PR body — what changed and why"]
 # Run from inside a worktree created by start-task. Commits, pushes, opens/updates
 # the PR, then waits for CI. Removes the worktree ONLY if CI is green; if CI is red
 # the worktree is KEPT so you can fix the failure and re-run auto-pr.
+# Pass a real body: it becomes the PR description. Without one, a fallback body is
+# generated from the commit list + diffstat.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
 
 TITLE="${1:-}"
+BODY="${2:-}"
 WORKTREE=$(git rev-parse --show-toplevel)
 MAIN_REPO=$(git worktree list | awk 'NR==1{print $1}')
 BRANCH=$(git branch --show-current)
@@ -34,9 +37,9 @@ if gh pr view --json state -q .state 2>/dev/null | grep -q "OPEN"; then
   echo "auto-pr: PR already open, pushed update"
 else
   if [ -n "$TITLE" ]; then
-    gh pr create --title "$TITLE" --body "Opened by Claude Code." --base main
+    gh pr create --title "$TITLE" --body "${BODY:-$(pr_body_fallback)}" --base main
   else
-    gh pr create --fill --base main
+    gh pr create --fill --base main --body "${BODY:-$(pr_body_fallback)}"
   fi
 fi
 
