@@ -125,6 +125,6 @@ gh api repos/alon-shviki/<game-name>/branches/main/protection --method PUT --inp
 EOF
 ```
 
-## 8. Wire Docker Compose
+## 8. Wire Docker Compose + Portal nginx
 
-Add the new game's nginx container to `~/Desktop/game/docker-compose.yml`. See `architecture.md` for the proxy pattern.
+Add the new game's nginx container to `~/Desktop/game/docker-compose.yml` AND a `location /<game>/` block to `~/Desktop/game/nginx.conf` (copy the `/bh/` block — proxy_pass with trailing slash + `sub_filter` base-href rewrite). See `Tech/Adding a New Game.md` for the exact snippets and the sub_filter contract (game index.html must contain the literal `<base href="/"`).

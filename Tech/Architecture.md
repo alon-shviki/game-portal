@@ -6,13 +6,17 @@
 portal nginx  (:3000)
   /                  → portal shell  (static HTML)
   /api/auth/*        → portal-auth   (ASP.NET Core)
+  /bh/*              → bh-client           (Blazor WASM, proxied)
+  /orbit-break/*     → orbit-break-client  (Blazor WASM, proxied)
 
-game containers (own nginx, embedded in the portal shell via <iframe>)
-  bh-client            :8080  → Bullet Heaven (Blazor WASM)
-  orbit-break-client   :8081  → Orbit Break   (Blazor WASM)
+dev-only direct ports (bypass the portal nginx)
+  bh-client            :8080
+  orbit-break-client   :8081
 ```
 
-The portal nginx serves only the shell + `/api/auth/`; each game is a **separate container on its own port**, loaded inside the portal via an `<iframe>` (see Auth Flow below). Path-based routing behind a single nginx (`/<game>/*`) is the eventual production target — see `.claude/rules/architecture.md` → "Target Production Layout".
+**Path-based routing**: the portal nginx proxies `/<game>/*` to each game's container and rewrites the game's `<base href="/">` to `<base href="/<game>/">` on the fly via `sub_filter`. Because the Blazor clients set `HttpClient.BaseAddress` from the base href, all assets *and* API calls follow the sub-path automatically — game images need no changes and still work standalone on :8080/:8081.
+
+**sub_filter contract**: every game's `index.html` must contain the literal string `<base href="/"` — the rewrite is an exact-string match. Reformatting that tag in a game repo silently breaks the game under the portal (CI stays green), so don't.
 
 All services live in one `docker-compose.yml`. See [[Tech/Infrastructure]] for the compose setup.
 
@@ -26,7 +30,7 @@ Player logs in at portal
   → stored in localStorage["jwt"]
 
 Player opens a game
-  → portal loads the game in an embedded <iframe> (runs inside the portal, no new tab)
+  → portal loads /<game>/ in an embedded <iframe> (same origin — served by the portal nginx)
   → token passed to the game via URL hash (#portal_token=…); game saves it to its own localStorage
   → game sends Authorization: Bearer <token> on API calls
   → game nginx proxies to portal-auth:5001
