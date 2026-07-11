@@ -39,6 +39,18 @@ jobs:
       - name: Build
         run: dotnet build ${{ inputs.project }} -c Release
 
+      # dotnet list exits 0 even when vulnerable packages exist — the grep is the gate.
+      - name: Vulnerable package gate
+        run: |
+          for proj in "${{ inputs.project }}" "${{ inputs.tests }}"; do
+            out=$(dotnet list "$proj" package --vulnerable --include-transitive)
+            echo "$out"
+            if echo "$out" | grep -q 'has the following vulnerable packages'; then
+              echo "::error::Vulnerable NuGet packages in $proj — bump the flagged versions"
+              exit 1
+            fi
+          done
+
       - name: Test
         run: dotnet test ${{ inputs.tests }} -c Release
 
@@ -62,4 +74,7 @@ jobs:
           context: ${{ inputs.context }}
           file: ${{ inputs.dockerfile }}
           push: true
-          tags: ghcr.io/alon-shviki/${{ inputs.image }}:latest
+          # latest for compose convenience; sha-* for immutable rollback targets
+          tags: |
+            ghcr.io/alon-shviki/${{ inputs.image }}:latest
+            ghcr.io/alon-shviki/${{ inputs.image }}:sha-${{ github.sha }}

@@ -16,9 +16,13 @@ build:                         build:  (same gate re-runs)
   cache NuGet packages           │
   dotnet format --verify         ▼
   dotnet build -c Release      push-image:  (only on push to main)
-  dotnet test  -c Release        docker build → push ghcr.io/alon-shviki/<image>:latest
+  vulnerable-package gate        docker build → push ghcr.io/alon-shviki/<image>:latest
+  dotnet test  -c Release                                          + :sha-<git-sha>
   ← blocks merge if red
 ```
+
+- **Vulnerable-package gate**: `dotnet list <proj> package --vulnerable --include-transitive`, failed by grep (the command itself always exits 0). Red gate → bump the flagged package version, don't remove the step.
+- **Image tags**: `:latest` (compose pulls it) + `:sha-<git-sha>` (immutable rollback target — `docker compose` can pin `image: ...:sha-<sha>` temporarily to roll back).
 
 - **PR gate** (`build`) runs on every PR and every push to `main`. It is the required status check in branch protection — a red `build` blocks merge.
 - **`push-image`** runs *only* on push to `main` (`if: github.ref == 'refs/heads/main' && github.event_name == 'push'`) and `needs: build`. PRs never push an image.
