@@ -17,7 +17,7 @@ Write a `CLAUDE.md` at the root — see BH's as a template. Must include:
 - Hard rules for this game's architecture
 - The standard **Issue Triage**, **Agentic Workflow**, and **Auto-Issue Rule** sections (copy from BH's `CLAUDE.md`)
 
-Create `.claude/scripts/` for any game-specific scripts (may be empty at first).
+**Do NOT copy the pipeline scripts** (`start-issue`, `start-task`, `auto-pr`, `finish-issue`, `lib.sh`) into the game repo — they live only in the portal and are repo-agnostic (they auto-detect the repo from cwd). Reference them by absolute path from the game's `CLAUDE.md`, exactly like Bullet Heaven does (`bash ~/Desktop/game/.claude/scripts/start-issue <n>`). Add a `.claude/scripts/` folder only for genuinely game-specific scripts.
 
 Add the game to `REPOS`/`ROOTS` in both `.claude/scripts/start-issue` and `.claude/scripts/start-task` in the portal repo so `start-issue <N>` and `start-task <name>` auto-detect it.
 
