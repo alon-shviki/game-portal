@@ -72,7 +72,13 @@ This is a dev-only concern. In production all services share the same origin.
 
 ## Security Rules
 
-- Passwords: bcrypt hash only (`BCrypt.Net-Next`), never logged or returned
+- Passwords: bcrypt hash only (`BCrypt.Net-Next`), explicit work factor 12, never logged or returned. Old hashes at other costs keep verifying — the cost is embedded per-hash.
 - JWT signing key: one shared secret in `.env` — never hardcoded
+- JWT validation: issuer, audience, lifetime, and signing key all explicitly validated (`Program.cs`); `MapInboundClaims = false` is load-bearing — endpoints read raw `sub`/`unique_name`
+- Rate limiting: `/api/login` + `/api/register` capped at 10 requests/min per client IP (ASP.NET fixed-window limiter, partitioned by the last `X-Forwarded-For` entry — the one our own nginx appends; earlier entries are client-spoofable). Ceiling: in-memory, single instance — switch to nginx `limit_req` if the topology ever grows.
 - HTTPS in production (nginx terminates TLS)
 - Token in URL hash is not sent to server (fragment never leaves the browser)
+
+## Refresh Tokens — Deliberately Skipped (July 2026)
+
+The 30-day access token stays. A refresh flow means a new table, two endpoints, and client logic in three codebases — to protect a hobby leaderboard whose token already lives in `localStorage`. If revocation is ever needed, the upgrade path is a `RefreshTokens` table + `/api/refresh`; nothing else in the stack needs changing today.

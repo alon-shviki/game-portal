@@ -43,9 +43,22 @@ public class ApiTests(ApiFixture fx) : IClassFixture<ApiFixture>
     record LeaderboardEntry(string Username, int Value, int Kills, int Level, DateTime PlayedAt);
     record PersonalBestEntry(int Value, int Kills, int Level, DateTime PlayedAt);
 
+    static int _ipCounter;
+
+    // Each call gets its own X-Forwarded-For so the auth rate limiter (partitioned
+    // by client IP) never throttles unrelated tests sharing the fixture.
+    static string NextIp() => $"10.0.0.{Interlocked.Increment(ref _ipCounter)}";
+
+    async Task<HttpResponseMessage> PostAuthAsync(string url, object body, string? ip = null)
+    {
+        var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = JsonContent.Create(body) };
+        req.Headers.Add("X-Forwarded-For", ip ?? NextIp());
+        return await fx.Client.SendAsync(req);
+    }
+
     async Task<string> RegisterAsync(string username)
     {
-        var resp = await fx.Client.PostAsJsonAsync("/api/register", new { username, password = "secret123" });
+        var resp = await PostAuthAsync("/api/register", new { username, password = "secret123" });
         resp.EnsureSuccessStatusCode();
         return (await resp.Content.ReadFromJsonAsync<AuthResponse>())!.Token;
     }
@@ -69,14 +82,14 @@ public class ApiTests(ApiFixture fx) : IClassFixture<ApiFixture>
     public async Task Register_DuplicateUsername_Conflicts()
     {
         await RegisterAsync("dup_user");
-        var resp = await fx.Client.PostAsJsonAsync("/api/register", new { username = "dup_user", password = "secret123" });
+        var resp = await PostAuthAsync("/api/register", new { username = "dup_user", password = "secret123" });
         Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
     }
 
     [Fact]
     public async Task Register_ShortPassword_BadRequest()
     {
-        var resp = await fx.Client.PostAsJsonAsync("/api/register", new { username = "shortpw_user", password = "12345" });
+        var resp = await PostAuthAsync("/api/register", new { username = "shortpw_user", password = "12345" });
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
@@ -84,7 +97,7 @@ public class ApiTests(ApiFixture fx) : IClassFixture<ApiFixture>
     public async Task Login_WrongPassword_Unauthorized()
     {
         await RegisterAsync("login_user");
-        var resp = await fx.Client.PostAsJsonAsync("/api/login", new { username = "login_user", password = "wrong-pass" });
+        var resp = await PostAuthAsync("/api/login", new { username = "login_user", password = "wrong-pass" });
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
@@ -92,7 +105,7 @@ public class ApiTests(ApiFixture fx) : IClassFixture<ApiFixture>
     public async Task Login_ThenMe_RoundTrips()
     {
         await RegisterAsync("me_user");
-        var login = await fx.Client.PostAsJsonAsync("/api/login", new { username = "me_user", password = "secret123" });
+        var login = await PostAuthAsync("/api/login", new { username = "me_user", password = "secret123" });
         login.EnsureSuccessStatusCode();
         var token = (await login.Content.ReadFromJsonAsync<AuthResponse>())!.Token;
 
@@ -148,6 +161,17 @@ public class ApiTests(ApiFixture fx) : IClassFixture<ApiFixture>
         var best = await mine.Content.ReadFromJsonAsync<List<PersonalBestEntry>>();
         Assert.Single(best!);
         Assert.Equal(100, best![0].Value);
+    }
+
+    [Fact]
+    public async Task Login_Hammered_Returns429()
+    {
+        const string ip = "10.99.99.99"; // dedicated partition for this test
+        HttpResponseMessage last = null!;
+        for (var i = 0; i < 11; i++)
+            last = await PostAuthAsync("/api/login", new { username = "nobody", password = "wrong" }, ip);
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, last.StatusCode);
     }
 
     [Fact]
