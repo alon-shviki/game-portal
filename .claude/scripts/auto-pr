@@ -26,6 +26,7 @@ if [ -z "$BRANCH" ] || [ "$BRANCH" = "main" ]; then
 fi
 
 git add -A
+remind_docs
 git commit -m "${TITLE:-auto: $(basename "$BRANCH")}"
 git push -u origin "$BRANCH"
 
