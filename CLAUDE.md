@@ -3,7 +3,7 @@
 ## Commands
 - **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env`
 - **Full stack**: `cd ~/Desktop/game && docker compose up --build`
-  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:8080 · Orbit Break → http://localhost:8081
+  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:3000/bh/ · Orbit Break → http://localhost:3000/orbit-break/ (direct dev ports: 8080 / 8081)
 
 ## Games
 

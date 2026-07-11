@@ -45,7 +45,7 @@ services:
   bh-client:
     image: ghcr.io/alon-shviki/bh-client:latest
     ports:
-      - "8080:80"
+      - "8080:80"   # dev-only direct access — portal serves the game at /bh/
     depends_on:
       - portal-auth
 
@@ -54,7 +54,7 @@ services:
   orbit-break-client:
     image: ghcr.io/alon-shviki/orbit-break-client:latest
     ports:
-      - "8081:80"
+      - "8081:80"   # dev-only direct access — portal serves the game at /orbit-break/
     depends_on:
       - portal-auth
 
