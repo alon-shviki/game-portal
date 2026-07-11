@@ -55,27 +55,29 @@ Steps:
 1. Runs tests (auto-detects `.Tests.csproj`)
 2. If tests fail → stops, reports failure
 3. If pass → commits, pushes branch, opens PR (links `Closes #N`)
-4. Waits for CI (`gh pr checks --watch`)
-5. If CI green → merges PR → deletes remote branch → removes worktree
-6. If CI fails → stops, leaves PR open for manual fix
+4. Waits for CI via `wait_for_ci` (retries while checks register, then watches)
+5. **CI green** → merges PR → removes worktree → pulls `origin/main` → deletes remote branch
+6. **CI red** → skips the merge and **keeps the worktree** so you can fix and re-run
 
 ### Non-issue work
 ```bash
-git checkout -b feat/<name>
-# ... make changes ...
+start-task <name>
+# ... make changes in the worktree ...
 auto-pr "description"
 ```
-`auto-pr` stages, commits, pushes, opens PR. You merge manually.
+`auto-pr` commits, pushes, opens/updates the PR, then waits for CI. **Green → removes the worktree** (PR left open for you to merge); **red → keeps the worktree** so you can fix and re-run.
 
 ## Scripts
 
-All scripts live in `.claude/scripts/` (versioned). Symlinked to `~/.local/bin/` via `setup.sh`.
+All scripts live **only** in the portal repo at `.claude/scripts/` (versioned); `setup.sh` symlinks the entry points into `~/.local/bin/`. Game repos reference them by absolute path — no per-repo copies. Shared logic lives in `lib.sh`.
 
 | Script | What it does |
 |--------|-------------|
 | `start-issue <n>` | Creates worktree + branch from `origin/main` |
-| `finish-issue` | Tests → push → PR → wait CI → merge → delete worktree |
-| `auto-pr "msg"` | Commit + push + open PR (no worktree, no auto-merge) |
+| `start-task <name>` | Same, for non-issue work (`feat/<name>` branch) |
+| `finish-issue` | Tests → PR → wait for CI → **merge if green** → remove worktree (kept if red) |
+| `auto-pr "msg"` | Commit → PR → wait for CI → **remove worktree if green** (kept if red); no merge |
+| `lib.sh` | Shared `wait_for_ci` + `remove_worktree` helpers, sourced by the two above |
 
 **New machine setup:**
 ```bash
@@ -89,10 +91,10 @@ Each game keeps its own QA/test/docs/e2e sub-agents in its own repo (e.g. Bullet
 
 ## CI / Branch Protection
 
-Both `game-portal` and `Bullet-Heaven`:
+`game-portal`, `Bullet-Heaven`, and `orbit-break`:
 - Direct pushes to `main` blocked
 - PRs require the `build` check to pass
-- `build` job: compile + run tests
+- `build` job: cache → `dotnet format --verify` → build → test
 - `push-image` job: runs only on merge to `main`, pushes to GHCR
 
 New games must follow the same pattern — see `.claude/rules/adding-a-game.md`.

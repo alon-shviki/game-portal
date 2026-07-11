@@ -8,12 +8,13 @@ Everything runs from the portal compose. One command starts the whole stack:
 cd ~/Desktop/game && docker compose up
 # Portal shell  → http://localhost:3000
 # Bullet Heaven → http://localhost:8080
+# Orbit Break   → http://localhost:8081
 ```
 
-BH client only (no auth/scores — for pure game dev):
+Game client only (no auth/scores — for pure game dev):
 ```bash
-cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run
-# → http://localhost:5292
+cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run   # → http://localhost:5292
+cd ~/Desktop/orbit-break/OrbitBreak.Client && dotnet run        # Orbit Break
 ```
 
 ---
@@ -22,14 +23,15 @@ cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run
 
 ```
 docker-compose.yml  (~/Desktop/game/)
-  ├── nginx          :3000  → portal shell (static) + /api/auth/ → portal-auth
-  ├── portal-auth    :5001  → ASP.NET Core — auth, scores, leaderboard
-  ├── postgres       :5432  → portal DB (users + scores)
-  └── bh-client      :8080  → GHCR image (Blazor WASM + nginx)
-                               nginx proxies /api/scores, /api/leaderboard → portal-auth
+  ├── nginx                :3000  → portal shell (static) + /api/auth/ → portal-auth
+  ├── portal-auth          :5001  → ASP.NET Core — auth, scores, leaderboard
+  ├── postgres             :5432  → portal DB (users + scores)
+  ├── bh-client            :8080  → GHCR image (Blazor WASM + nginx)
+  │                                  nginx proxies /api/scores, /api/leaderboard → portal-auth
+  └── orbit-break-client   :8081  → GHCR image (Blazor WASM + nginx), same proxy contract
 ```
 
-BH has **no standalone API server**. Auth, scores and leaderboard live entirely in `portal-auth`.
+Games have **no standalone API server**. Auth, scores and leaderboard live entirely in `portal-auth`.
 
 ---
 
@@ -38,10 +40,11 @@ BH has **no standalone API server**. Auth, scores and leaderboard live entirely 
 ```yaml
 # ~/Desktop/game/docker-compose.yml
 services:
-  nginx:           # portal — port 3000
-  portal-auth:     # ASP.NET Core minimal API — port 5001
-  postgres:        # portal DB
-  bh-client:       # image: ghcr.io/alon-shviki/bh-client:latest — port 8080
+  nginx:                # portal — port 3000
+  portal-auth:          # ASP.NET Core minimal API — port 5001 (built locally via `build: ./portal-auth`)
+  postgres:             # portal DB
+  bh-client:            # image: ghcr.io/alon-shviki/bh-client:latest — port 8080
+  orbit-break-client:   # image: ghcr.io/alon-shviki/orbit-break-client:latest — port 8081
 ```
 
 See the actual file for full env var wiring. Port 80 is taken by `idp-control-plane` on the dev machine, so portal runs on 3000.
@@ -78,9 +81,12 @@ All secrets in `.env` (gitignored). Copy `.env.example` on a fresh clone.
 
 ## CI / Docker Images
 
-| Image | Built by | Pushed to |
-|-------|----------|-----------|
-| `ghcr.io/alon-shviki/bh-client` | BH `.github/workflows/docker.yml` | GHCR (public) |
-| `portal-auth` | built locally via `docker compose build` | — |
+| Image | Built & pushed by | Consumed by compose |
+|-------|-------------------|---------------------|
+| `ghcr.io/alon-shviki/bh-client` | BH `docker.yml`, merge to main | pulled |
+| `ghcr.io/alon-shviki/orbit-break-client` | OB `docker.yml`, merge to main | pulled |
+| `ghcr.io/alon-shviki/portal-auth` | portal `ci.yml`, merge to main | **built locally** (`build: ./portal-auth`) — the pushed image isn't pulled by compose today |
 
-To deploy BH changes: push to `main` → CI builds new image → `docker compose pull bh-client && docker compose up -d`.
+Every workflow's `build` gate runs cache → format → build → test before the image is pushed — see [[Tech/CI and Branch Protection]].
+
+To deploy a game change: push to `main` → CI builds + pushes the new image → `docker compose pull <service> && docker compose up -d`.
