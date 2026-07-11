@@ -1,0 +1,12 @@
+# Opt-in TLS override. Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml up
+# Requires ./certs/cert.pem + ./certs/key.pem (mkcert for local — see Tech/Infrastructure.md).
+services:
+  nginx:
+    ports:
+      - "3000:80"
+      - "3443:443"
+    volumes:
+      - ./nginx-tls.conf:/etc/nginx/nginx.conf:ro
+      - ./shell:/usr/share/nginx/html:ro
+      - ./certs:/etc/nginx/certs:ro
