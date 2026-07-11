@@ -24,6 +24,7 @@ fi
 
 # Commit if there are changes
 git add -A
+remind_docs
 if ! git diff --cached --quiet; then
   TITLE=$(gh issue view "$ISSUE_NUM" --repo "$REPO" --json title -q .title 2>/dev/null || echo "fix: issue #${ISSUE_NUM}")
   git commit -m "$TITLE"
