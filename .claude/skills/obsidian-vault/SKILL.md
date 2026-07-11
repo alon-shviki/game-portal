@@ -39,8 +39,8 @@ Games/
 
 ### Search
 ```bash
-find "/home/alon/Desktop/game/" -name "*.md" | grep -i "keyword"   # by filename
-grep -rl "keyword" "/home/alon/Desktop/game/" --include="*.md"      # by content
+find -L "/home/alon/Desktop/game/" -name "*.md" | grep -i "keyword"   # by filename
+grep -Rl "keyword" "/home/alon/Desktop/game/" --include="*.md"        # by content
 ```
 Or use the Grep/Glob tools on the vault path.
 
@@ -51,7 +51,8 @@ Or use the Grep/Glob tools on the vault path.
 
 ### Find backlinks
 ```bash
-grep -rl "\[\[Note Title\]\]" "/home/alon/Desktop/game/" --include="*.md"
+# matches bare, aliased ([[Note Title|X]]), and path-qualified ([[Folder/Note Title]]) links
+grep -Rl "\[\[[^]]*Note Title" "/home/alon/Desktop/game/" --include="*.md"
 ```
 
 ## Rules
