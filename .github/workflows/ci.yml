@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    branches: [main]
+  push:
     branches: [main]
 
 permissions:
@@ -11,46 +11,11 @@ permissions:
   packages: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-          restore-keys: nuget-${{ runner.os }}-
-
-      - name: Format check
-        run: |
-          dotnet format portal-auth/PortalAuth.csproj --verify-no-changes
-          dotnet format PortalAuth.Tests/PortalAuth.Tests.csproj --verify-no-changes
-
-      - name: Build portal-auth
-        run: dotnet build portal-auth/PortalAuth.csproj -c Release
-
-      - name: Test
-        run: dotnet test PortalAuth.Tests/PortalAuth.Tests.csproj -c Release
-
-  push-image:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push portal-auth image
-        uses: docker/build-push-action@v5
-        with:
-          context: portal-auth
-          push: true
-          tags: ghcr.io/alon-shviki/portal-auth:latest
+  ci:
+    uses: ./.github/workflows/dotnet-ci.yml
+    with:
+      project: portal-auth/PortalAuth.csproj
+      tests: PortalAuth.Tests/PortalAuth.Tests.csproj
+      image: portal-auth
+      context: portal-auth
+      dockerfile: portal-auth/Dockerfile

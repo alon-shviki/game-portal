@@ -5,43 +5,26 @@
 All three repos — `game-portal`, `Bullet-Heaven`, `orbit-break` — have the same rules on `main`:
 
 - Direct pushes blocked — all changes go through a PR
-- `build` check must pass before merge
+- `ci / build` check must pass before merge
 - Force pushes blocked
 - Branch deletion blocked
 
-## The `build` gate
+## One reusable workflow, three callers
 
-Every repo runs the **same gate** on each PR + push, in this order:
+CI is **single-source**, like the pipeline scripts. The gate lives once in the portal repo and every repo calls it:
 
-1. **Cache NuGet** — `actions/cache` on `~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`
-2. **Format check** — `dotnet format <project>.csproj --verify-no-changes` (per project; targets the `.csproj`, not the `.slnx`)
-3. **Build** — `dotnet build -c Release`
-4. **Test** — `dotnet test -c Release` (all three repos have a test project)
+- **`game-portal/.github/workflows/dotnet-ci.yml`** — the reusable workflow (`on: workflow_call`). Two jobs:
+  - `build` — cache NuGet (`~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`) → `dotnet format <project> <tests> --verify-no-changes` → `dotnet build -c Release` → `dotnet test -c Release`
+  - `push-image` — on push to `main` only, builds + pushes the image to GHCR
+- **Each repo's `ci.yml`** is a thin caller that passes its own paths as inputs (`project`, `tests`, `image`, `context`, `dockerfile`):
 
-A red gate blocks merge. `push-image` runs only on merge to `main`.
+| Repo | Caller | Inputs (project / tests / image) |
+|------|--------|----------------------------------|
+| `game-portal` | `ci.yml` → `./.github/workflows/dotnet-ci.yml` (local ref) | `portal-auth` / `PortalAuth.Tests` / `portal-auth` |
+| `Bullet-Heaven` | `ci.yml` → `…/dotnet-ci.yml@main` | `BulletHeaven.Client` / `BulletHeaven.Tests` / `bh-client` |
+| `orbit-break` | `ci.yml` → `…/dotnet-ci.yml@main` | `OrbitBreak.Client` / `OrbitBreak.Tests` / `orbit-break-client` |
 
-## Workflow Files
-
-**game-portal** — `.github/workflows/ci.yml`
-
-| Job | Trigger | What it does |
-|-----|---------|--------------|
-| `build` | every PR + push | cache → format → `dotnet build portal-auth` → `dotnet test PortalAuth.Tests` |
-| `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/portal-auth:latest` |
-
-**Bullet-Heaven** — `.github/workflows/docker.yml`
-
-| Job | Trigger | What it does |
-|-----|---------|--------------|
-| `build` | every PR + push | cache → format → `dotnet build` client → `dotnet test BulletHeaven.Tests` |
-| `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/bh-client:latest` |
-
-**orbit-break** — `.github/workflows/docker.yml`
-
-| Job | Trigger | What it does |
-|-----|---------|--------------|
-| `build` | every PR + push | cache → format → `dotnet build` client → `dotnet test OrbitBreak.Tests` |
-| `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/orbit-break-client:latest` |
+**Check name:** because a caller job (`ci`) invokes the reusable workflow, the status check is reported as **`ci / build`** (not `build`) — that's the required context in branch protection. Editing `dotnet-ci.yml` changes the gate for all three repos at once. Pin the games to a tag/SHA instead of `@main` if you want changes to roll out deliberately rather than immediately.
 
 ## Issue Labels
 

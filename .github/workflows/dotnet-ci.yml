@@ -1,0 +1,65 @@
+name: dotnet-ci
+
+# Reusable CI for every repo in the portal stack (portal + games).
+# Single source of truth — each repo's ci.yml calls this with its own paths.
+# Called locally by game-portal (./.github/workflows/dotnet-ci.yml) and cross-repo
+# by the games (alon-shviki/game-portal/.github/workflows/dotnet-ci.yml@main).
+
+on:
+  workflow_call:
+    inputs:
+      project:    { required: true, type: string }   # build .csproj
+      tests:      { required: true, type: string }   # test .csproj
+      image:      { required: true, type: string }   # GHCR image name (no registry/owner/tag)
+      context:    { required: true, type: string }   # docker build context
+      dockerfile: { required: true, type: string }   # Dockerfile path (workspace-relative)
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Format check
+        run: |
+          dotnet format ${{ inputs.project }} --verify-no-changes
+          dotnet format ${{ inputs.tests }} --verify-no-changes
+
+      - name: Build
+        run: dotnet build ${{ inputs.project }} -c Release
+
+      - name: Test
+        run: dotnet test ${{ inputs.tests }} -c Release
+
+  push-image:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          push: true
+          tags: ghcr.io/alon-shviki/${{ inputs.image }}:latest
