@@ -16,8 +16,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Format check
+        run: |
+          dotnet format portal-auth/PortalAuth.csproj --verify-no-changes
+          dotnet format PortalAuth.Tests/PortalAuth.Tests.csproj --verify-no-changes
+
       - name: Build portal-auth
         run: dotnet build portal-auth/PortalAuth.csproj -c Release
+
+      - name: Test
+        run: dotnet test PortalAuth.Tests/PortalAuth.Tests.csproj -c Release
 
   push-image:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'

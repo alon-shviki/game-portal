@@ -22,9 +22,9 @@ builder.Services
         opt.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-            ValidIssuer              = "Portal",
-            ValidAudience            = "Portal",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidIssuer = "Portal",
+            ValidAudience = "Portal",
         };
     });
 
@@ -54,14 +54,14 @@ app.MapPost("/api/register", async (AuthRequest req, AppDbContext db) =>
 
     var user = new User
     {
-        Username     = req.Username,
+        Username = req.Username,
         PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-        CreatedAt    = DateTime.UtcNow,
+        CreatedAt = DateTime.UtcNow,
     };
     db.Users.Add(user);
     await db.SaveChangesAsync();
 
-    return Results.Ok(new AuthResponse(BuildToken(user, jwtKey)));
+    return Results.Ok(new AuthResponse(TokenService.CreateToken(user, jwtKey)));
 });
 
 app.MapPost("/api/login", async (AuthRequest req, AppDbContext db) =>
@@ -70,7 +70,7 @@ app.MapPost("/api/login", async (AuthRequest req, AppDbContext db) =>
     if (user is null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
         return Results.Unauthorized();
 
-    return Results.Ok(new AuthResponse(BuildToken(user, jwtKey)));
+    return Results.Ok(new AuthResponse(TokenService.CreateToken(user, jwtKey)));
 });
 
 app.MapGet("/api/me", (ClaimsPrincipal principal, AppDbContext db) =>
@@ -88,7 +88,7 @@ app.MapGet("/health", () => Results.Ok("ok"));
 
 app.MapPost("/api/scores/{game}", async (string game, ScoreSubmitRequest req, ClaimsPrincipal principal, AppDbContext db) =>
 {
-    var sub      = principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
+    var sub = principal.FindFirstValue(JwtRegisteredClaimNames.Sub);
     var username = principal.FindFirstValue(JwtRegisteredClaimNames.UniqueName);
     if (sub is null || username is null) return Results.Unauthorized();
 
@@ -96,12 +96,12 @@ app.MapPost("/api/scores/{game}", async (string game, ScoreSubmitRequest req, Cl
 
     db.Scores.Add(new Score
     {
-        UserId   = int.Parse(sub),
+        UserId = int.Parse(sub),
         Username = username,
-        Game     = game,
-        Value    = req.Value,
-        Kills    = req.Kills,
-        Level    = req.Level,
+        Game = game,
+        Value = req.Value,
+        Kills = req.Kills,
+        Level = req.Level,
         PlayedAt = DateTime.UtcNow,
     });
     await db.SaveChangesAsync();
@@ -134,28 +134,6 @@ app.MapGet("/api/leaderboard/{game}/me", async (string game, ClaimsPrincipal pri
 }).RequireAuthorization();
 
 app.Run();
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-static string BuildToken(User user, string jwtKey)
-{
-    var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-    var exp = DateTimeOffset.UtcNow.AddDays(30).ToUnixTimeSeconds(); // long-lived so a docker restart doesn't force re-login
-    var claims = new[]
-    {
-        new Claim(JwtRegisteredClaimNames.Sub,        user.Id.ToString()),
-        new Claim(JwtRegisteredClaimNames.UniqueName, user.Username),
-        new Claim(JwtRegisteredClaimNames.Exp,        exp.ToString(), ClaimValueTypes.Integer64),
-    };
-    var token = new JwtSecurityToken(
-        issuer:            "Portal",
-        audience:          "Portal",
-        claims:            claims,
-        signingCredentials: creds);
-
-    return new JwtSecurityTokenHandler().WriteToken(token);
-}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
