@@ -93,15 +93,31 @@ mkdir -p .github/ISSUE_TEMPLATE
 cp ~/Desktop/game/.github/ISSUE_TEMPLATE/*.md .github/ISSUE_TEMPLATE/
 ```
 
-**CI workflow** — create `.github/workflows/ci.yml` matching the game's stack. At minimum:
-- Run tests on every PR targeting `main`
-- Push image to GHCR on merge to `main`
+**CI workflow** — create a thin `.github/workflows/ci.yml` that **calls the portal's reusable workflow** (don't hand-write the build steps — they're single-source in `game-portal/.github/workflows/dotnet-ci.yml`):
+```yaml
+name: CI
+on:
+  pull_request: { branches: [main] }
+  push:         { branches: [main] }
+permissions:
+  contents: read
+  packages: write
+jobs:
+  ci:
+    uses: alon-shviki/game-portal/.github/workflows/dotnet-ci.yml@main
+    with:
+      project: <Client>/<Client>.csproj
+      tests: <Tests>/<Tests>.csproj
+      image: <game>-client
+      context: .
+      dockerfile: <Client>/Dockerfile
+```
 
-**Branch protection** (after first CI run):
+**Branch protection** (after first CI run) — the required check is **`ci / build`** (the reusable workflow's `build` job under the caller job `ci`):
 ```bash
 gh api repos/alon-shviki/<game-name>/branches/main/protection --method PUT --input - <<'EOF'
 {
-  "required_status_checks": { "strict": true, "contexts": ["build"] },
+  "required_status_checks": { "strict": true, "contexts": ["ci / build"] },
   "enforce_admins": false,
   "required_pull_request_reviews": { "required_approving_review_count": 0 },
   "restrictions": null
