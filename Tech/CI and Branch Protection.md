@@ -15,7 +15,7 @@ CI is **single-source**, like the pipeline scripts. The gate lives once in the p
 
 - **`game-portal/.github/workflows/dotnet-ci.yml`** — the reusable workflow (`on: workflow_call`). Two jobs:
   - `build` — cache NuGet (`~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`) → `dotnet format <project> <tests> --verify-no-changes` → `dotnet build -c Release` → vulnerable-package gate (`dotnet list package --vulnerable --include-transitive`, failed by grep) → `dotnet test -c Release`
-  - `push-image` — on push to `main` only, builds + pushes the image to GHCR tagged `:latest` **and** `:sha-<git-sha>` (immutable rollback target)
+  - `push-image` — on push to `main` only, builds + pushes the image to GHCR tagged `:latest` **and** `:sha-<git-sha>` (immutable rollback target). On PR runs this job shows as **"skipping" — that's by design**, not a failure: a PR must never overwrite `:latest`; the push happens when the merge commit lands on `main`.
 - **Each repo's `ci.yml`** is a thin caller that passes its own paths as inputs (`project`, `tests`, `image`, `context`, `dockerfile`):
 
 | Repo | Caller | Inputs (project / tests / image) |

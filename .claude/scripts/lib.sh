@@ -36,7 +36,22 @@ remove_worktree() {
   cd "$main"
   git worktree remove "$wt" --force 2>/dev/null || true
   rm -rf "$wt"
+  # A build started just before removal (e.g. a Stop-hook build gate) can recreate
+  # bin/obj mid-delete and strand the directory — retry once after it settles.
+  if [ -d "$wt" ]; then sleep 3; rm -rf "$wt"; fi
   git worktree prune
+}
+
+# pr_body_fallback
+# Auto-generated PR body used when the caller didn't pass one: commit subjects
+# + diffstat vs origin/main. A caller-written body is always better — the
+# command docs tell Claude to pass one.
+pr_body_fallback() {
+  git log origin/main..HEAD --pretty='- %s'
+  echo
+  echo '```'
+  git diff origin/main...HEAD --stat | tail -3
+  echo '```'
 }
 
 # remind_docs

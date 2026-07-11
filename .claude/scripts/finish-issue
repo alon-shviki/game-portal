@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
+# Usage: finish-issue ["PR body — what changed and why"]
 # Run from inside the worktree when work is done.
-# tests → push → PR (Closes #N) → wait for CI → merge → remove worktree.
+# tests → push → PR (Closes #N + body) → wait for CI → merge → remove worktree.
 # If CI is red the merge is skipped and the worktree is KEPT — fix and re-run.
+# Pass a real body: it is appended under the Closes line. Without one, a fallback
+# is generated from the commit list + diffstat.
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,8 +36,10 @@ fi
 git push -u origin "$BRANCH"
 
 # Open the PR (or reuse an already-open one), linked to the issue
+BODY="${1:-}"
 if ! gh pr view --json state -q .state 2>/dev/null | grep -q "OPEN"; then
-  gh pr create --fill --base main --body "Closes #${ISSUE_NUM}" >/dev/null
+  gh pr create --fill --base main \
+    --body "$(printf 'Closes #%s\n\n%s' "$ISSUE_NUM" "${BODY:-$(pr_body_fallback)}")" >/dev/null
 fi
 PR_NUM=$(gh pr view --json number -q .number)
 echo "PR #$PR_NUM — waiting for CI…"
