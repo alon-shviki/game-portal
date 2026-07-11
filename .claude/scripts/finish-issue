@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Run from inside the worktree when work is done.
+# tests → push → PR (Closes #N) → wait for CI → merge → remove worktree.
+# If CI is red the merge is skipped and the worktree is KEPT — fix and re-run.
 set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
 
 REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 BRANCH=$(git branch --show-current)
@@ -26,19 +31,25 @@ fi
 
 git push -u origin "$BRANCH"
 
-# Open PR, link to issue, wait for CI, merge
-PR_URL=$(gh pr create --fill --base main --body "Closes #${ISSUE_NUM}")
-PR_NUM=$(basename "$PR_URL")
-echo "PR: $PR_URL"
-echo "Waiting for CI..."
-gh pr checks "$PR_NUM" --watch
-gh pr merge "$PR_NUM" --squash --delete-branch
+# Open the PR (or reuse an already-open one), linked to the issue
+if ! gh pr view --json state -q .state 2>/dev/null | grep -q "OPEN"; then
+  gh pr create --fill --base main --body "Closes #${ISSUE_NUM}" >/dev/null
+fi
+PR_NUM=$(gh pr view --json number -q .number)
+echo "PR #$PR_NUM — waiting for CI…"
 
-# Clean up worktree and sync main
-cd "$MAIN_REPO"
-git worktree remove "$WORKTREE" --force 2>/dev/null || true
-rm -rf "$WORKTREE"          # git leaves ignored bin/obj behind, stranding the dir
-git worktree prune
-git checkout main
-git pull origin main
-echo "Done — worktree removed, main is up to date."
+if ! wait_for_ci "$PR_NUM"; then
+  echo ""
+  echo "CI is RED on PR #$PR_NUM — NOT merging. Worktree KEPT at:"
+  echo "    $WORKTREE"
+  echo "Fix the failure there, then re-run finish-issue."
+  exit 1
+fi
+
+# no --delete-branch: it checks out main *inside the worktree* and dies; delete it after cleanup
+gh pr merge "$PR_NUM" --squash
+remove_worktree "$WORKTREE" "$MAIN_REPO"
+git checkout main -q
+git pull origin main -q
+git push origin --delete "$BRANCH" 2>/dev/null || true
+echo "Done — PR #$PR_NUM merged, worktree removed, main is up to date."
