@@ -36,7 +36,9 @@ gh pr merge "$PR_NUM" --squash --delete-branch
 
 # Clean up worktree and sync main
 cd "$MAIN_REPO"
-git worktree remove "$WORKTREE" --force
+git worktree remove "$WORKTREE" --force 2>/dev/null || true
+rm -rf "$WORKTREE"          # git leaves ignored bin/obj behind, stranding the dir
+git worktree prune
 git checkout main
 git pull origin main
 echo "Done — worktree removed, main is up to date."
