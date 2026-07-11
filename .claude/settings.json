@@ -1,4 +1,22 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet format:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)"
+    ],
+    "deny": [
+      "Read(~/.microsoft/usersecrets/**)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -16,6 +34,30 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-main-edit.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // \"\"' | { read -r f; case \"$f\" in *.cs) dirname \"$f\" > /tmp/portal-build-pending ;; *) exit 0 ;; esac; }",
+            "statusMessage": "Flagging build gate..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "input=$(cat); [ \"$(printf '%s' \"$input\" | jq -r '.stop_hook_active // false')\" = \"true\" ] && exit 0; [ -f /tmp/portal-build-pending ] || exit 0; dir=$(cat /tmp/portal-build-pending); rm -f /tmp/portal-build-pending; root=$(git -C \"$dir\" rev-parse --show-toplevel 2>/dev/null) || exit 0; out=$(dotnet build \"$root/PortalAuth.Tests/PortalAuth.Tests.csproj\" --nologo -v q 2>&1) || { printf 'BUILD GATE FAILED — the solution does not compile. Fix before finishing:\\n%s\\n' \"$out\" >&2; exit 2; }",
+            "timeout": 180,
+            "statusMessage": "Build gate: compiling portal-auth + tests..."
           }
         ]
       }
