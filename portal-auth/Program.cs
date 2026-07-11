@@ -143,3 +143,6 @@ record MeResponse(int Id, string Username);
 record ScoreSubmitRequest(int Value, int Kills, int Level);
 record LeaderboardEntry(string Username, int Value, int Kills, int Level, DateTime PlayedAt);
 record PersonalBestEntry(int Value, int Kills, int Level, DateTime PlayedAt);
+
+// Exposes the entry point to WebApplicationFactory in PortalAuth.Tests.
+public partial class Program { }

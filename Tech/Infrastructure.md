@@ -89,4 +89,6 @@ All secrets in `.env` (gitignored). Copy `.env.example` on a fresh clone.
 
 Every workflow's `build` gate runs cache → format → build → test before the image is pushed — see [[Tech/CI and Branch Protection]].
 
+**Portal-auth tests need Docker.** `PortalAuth.Tests` includes integration tests (`ApiTests.cs`) that spin up a real `postgres:17-alpine` via Testcontainers and hit every endpoint through `WebApplicationFactory` — migrations run unmodified, exactly like production. `dotnet test` therefore requires a running Docker daemon, both locally and in CI (GitHub's `ubuntu-latest` has one).
+
 To deploy a game change: push to `main` → CI builds + pushes the new image → `docker compose pull <service> && docker compose up -d`.
