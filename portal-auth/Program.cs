@@ -1,7 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PortalAuth;
@@ -25,15 +27,40 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidIssuer = "Portal",
             ValidAudience = "Portal",
+            // Explicit — these are the defaults, but the security posture should be greppable.
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
         };
     });
 
 builder.Services.AddAuthorization();
 
+// Brute-force guard on login/register. Partition by client IP: the LAST
+// X-Forwarded-For entry is the one appended by our own nginx (earlier entries
+// are client-supplied and spoofable); direct connections fall back to the socket IP.
+builder.Services.AddRateLimiter(opt =>
+{
+    opt.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    opt.AddPolicy("auth", ctx =>
+    {
+        var forwarded = ctx.Request.Headers["X-Forwarded-For"].ToString();
+        var ip = forwarded.Length > 0
+            ? forwarded.Split(',')[^1].Trim()
+            : ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+        });
+    });
+});
+
 var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 // Auto-migrate on startup
 using (var scope = app.Services.CreateScope())
@@ -55,14 +82,14 @@ app.MapPost("/api/register", async (AuthRequest req, AppDbContext db) =>
     var user = new User
     {
         Username = req.Username,
-        PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password, workFactor: 12),
         CreatedAt = DateTime.UtcNow,
     };
     db.Users.Add(user);
     await db.SaveChangesAsync();
 
     return Results.Ok(new AuthResponse(TokenService.CreateToken(user, jwtKey)));
-});
+}).RequireRateLimiting("auth");
 
 app.MapPost("/api/login", async (AuthRequest req, AppDbContext db) =>
 {
@@ -71,7 +98,7 @@ app.MapPost("/api/login", async (AuthRequest req, AppDbContext db) =>
         return Results.Unauthorized();
 
     return Results.Ok(new AuthResponse(TokenService.CreateToken(user, jwtKey)));
-});
+}).RequireRateLimiting("auth");
 
 app.MapGet("/api/me", (ClaimsPrincipal principal, AppDbContext db) =>
 {
