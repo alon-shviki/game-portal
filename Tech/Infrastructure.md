@@ -68,6 +68,24 @@ location /                    → Blazor WASM static files
 
 ---
 
+## TLS (opt-in)
+
+Default compose is plain HTTP (localhost dev). To serve HTTPS on **:3443**:
+
+```bash
+# one-time local certs (mkcert installs a local CA the browser trusts)
+mkcert -install
+mkcert -cert-file certs/cert.pem -key-file certs/key.pem localhost
+
+docker compose -f docker-compose.yml -f docker-compose.tls.yml up
+```
+
+- `docker-compose.tls.yml` swaps the nginx config for `nginx-tls.conf` (same routing + a 443 server block with HSTS; port 80 redirects) and mounts `./certs` read-only.
+- `certs/` is gitignored — for a real deploy, drop real certs there or terminate TLS upstream (e.g. a cloud load balancer) and keep the HTTP config.
+- **Keep `nginx-tls.conf` location blocks in sync with `nginx.conf`** when adding a game.
+
+---
+
 ## Environment Variables
 
 | Variable | Where Used | Description |
