@@ -3,7 +3,7 @@
 > Vampire Survivors-style top-down survival shooter. Survive endless enemy waves, collect XP, pick upgrades, and chase the high score.
 
 **Repo:** `~/Desktop/Bullet-Heaven`  
-**Play:** `cd ~/Desktop/game && docker compose up` → http://localhost:8080  
+**Play:** `cd ~/Desktop/game && docker compose up` → http://localhost:3000/bh/ (direct dev port: 8080)  
 **Dev only (no auth):** `cd BulletHeaven.Client && dotnet run` → http://localhost:5292
 
 ---

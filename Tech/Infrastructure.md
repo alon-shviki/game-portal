@@ -7,8 +7,8 @@ Everything runs from the portal compose. One command starts the whole stack:
 ```bash
 cd ~/Desktop/game && docker compose up
 # Portal shell  → http://localhost:3000
-# Bullet Heaven → http://localhost:8080
-# Orbit Break   → http://localhost:8081
+# Bullet Heaven → http://localhost:3000/bh/          (direct dev port: 8080)
+# Orbit Break   → http://localhost:3000/orbit-break/ (direct dev port: 8081)
 ```
 
 Game client only (no auth/scores — for pure game dev):
@@ -24,11 +24,14 @@ cd ~/Desktop/orbit-break/OrbitBreak.Client && dotnet run        # Orbit Break
 ```
 docker-compose.yml  (~/Desktop/game/)
   ├── nginx                :3000  → portal shell (static) + /api/auth/ → portal-auth
-  ├── portal-auth          :5001  → ASP.NET Core — auth, scores, leaderboard
+  │                                  + /bh/, /orbit-break/ → game clients (base-href rewritten via sub_filter)
+  ├── portal-auth          :5001  → ASP.NET Core — auth, scores, leaderboard (rate-limited login/register)
   ├── postgres             :5432  → portal DB (users + scores)
-  ├── bh-client            :8080  → GHCR image (Blazor WASM + nginx)
+  ├── bh-client            :8080* → GHCR image (Blazor WASM + nginx)
   │                                  nginx proxies /api/scores, /api/leaderboard → portal-auth
-  └── orbit-break-client   :8081  → GHCR image (Blazor WASM + nginx), same proxy contract
+  └── orbit-break-client   :8081* → GHCR image (Blazor WASM + nginx), same proxy contract
+
+  * dev-only direct ports — players go through :3000
 ```
 
 Games have **no standalone API server**. Auth, scores and leaderboard live entirely in `portal-auth`.

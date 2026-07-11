@@ -14,8 +14,8 @@ All three repos — `game-portal`, `Bullet-Heaven`, `orbit-break` — have the s
 CI is **single-source**, like the pipeline scripts. The gate lives once in the portal repo and every repo calls it:
 
 - **`game-portal/.github/workflows/dotnet-ci.yml`** — the reusable workflow (`on: workflow_call`). Two jobs:
-  - `build` — cache NuGet (`~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`) → `dotnet format <project> <tests> --verify-no-changes` → `dotnet build -c Release` → `dotnet test -c Release`
-  - `push-image` — on push to `main` only, builds + pushes the image to GHCR
+  - `build` — cache NuGet (`~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`) → `dotnet format <project> <tests> --verify-no-changes` → `dotnet build -c Release` → vulnerable-package gate (`dotnet list package --vulnerable --include-transitive`, failed by grep) → `dotnet test -c Release`
+  - `push-image` — on push to `main` only, builds + pushes the image to GHCR tagged `:latest` **and** `:sha-<git-sha>` (immutable rollback target)
 - **Each repo's `ci.yml`** is a thin caller that passes its own paths as inputs (`project`, `tests`, `image`, `context`, `dockerfile`):
 
 | Repo | Caller | Inputs (project / tests / image) |
@@ -24,7 +24,7 @@ CI is **single-source**, like the pipeline scripts. The gate lives once in the p
 | `Bullet-Heaven` | `ci.yml` → `…/dotnet-ci.yml@main` | `BulletHeaven.Client` / `BulletHeaven.Tests` / `bh-client` |
 | `orbit-break` | `ci.yml` → `…/dotnet-ci.yml@main` | `OrbitBreak.Client` / `OrbitBreak.Tests` / `orbit-break-client` |
 
-**Check name:** because a caller job (`ci`) invokes the reusable workflow, the status check is reported as **`ci / build`** (not `build`) — that's the required context in branch protection. Editing `dotnet-ci.yml` changes the gate for all three repos at once. Pin the games to a tag/SHA instead of `@main` if you want changes to roll out deliberately rather than immediately.
+**Check name:** because a caller job (`ci`) invokes the reusable workflow, the status check is reported as **`ci / build`** (not `build`) — that's the required context in branch protection. **Never rename the `build` job**: `ci / build` is pinned by branch protection on all three repos AND by orbit-break's ruleset — renaming it silently un-gates merges until both layers are updated. Editing `dotnet-ci.yml` changes the gate for all three repos at once. Pin the games to a tag/SHA instead of `@main` if you want changes to roll out deliberately rather than immediately.
 
 ## Issue Labels
 

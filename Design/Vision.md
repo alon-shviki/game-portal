@@ -70,7 +70,7 @@ Return to portal → personal best updated on card
 | Game hosting | Each game on its own subdomain or path | Keeps codebases fully independent |
 | Auth | Shared JWT, issued by a portal auth server | One account across all games |
 | Leaderboard | Per-game endpoint, portal aggregates | Games stay self-contained |
-| Routing | nginx reverse-proxy | `/bullet-heaven/*` → BulletHeaven.Server, `/` → portal shell |
+| Routing | nginx reverse-proxy | `/bh/*`, `/orbit-break/*` → game clients, `/` → portal shell, `/api/auth/*` → portal-auth |
 | Tech | TBD — could be simple HTML/CSS or Blazor WASM | Depends on how interactive the shell needs to be |
 
 ---

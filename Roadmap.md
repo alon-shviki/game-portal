@@ -32,7 +32,16 @@
 - [x] Brainstorm and pick Game 2 (genre, stack, scope) → Orbit Break (physics arena/breakout hybrid, Blazor WASM + Canvas, ambitious scope) — see [[Design/Orbit Break]]
 - [ ] Brainstorm and pick Game 3
 
+## Done — Hardening (July 2026)
+
+- [x] Path-based game routing behind portal nginx (`/bh/`, `/orbit-break/`) + security headers + gzip
+- [x] portal-auth integration tests (Testcontainers postgres, all endpoints)
+- [x] portal-auth hardening — EF Core 10, BCrypt cost 12, explicit JWT validation, rate-limited auth endpoints (refresh tokens deliberately skipped — see [[Design/Shared Auth]])
+- [x] CI: vulnerable-package gate + `:sha-*` image tags (single-source `dotnet-ci.yml`)
+- [x] Opt-in TLS (`docker-compose.tls.yml` + mkcert) — see [[Tech/Infrastructure]]
+- [x] Legacy `BulletHeaven.Server` deleted (portal owns all backend)
+
 ## Later — Additional Games
 
-- [ ] Game 2 — Orbit Break (build not started)
+- [x] Game 2 — Orbit Break (shipped — client on GHCR, wired into portal)
 - [ ] Game 3 (TBD from ideas above)
