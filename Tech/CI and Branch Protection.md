@@ -2,12 +2,23 @@
 
 ## What's Protected
 
-Both `game-portal` and `Bullet-Heaven` have the same rules on `main`:
+All three repos — `game-portal`, `Bullet-Heaven`, `orbit-break` — have the same rules on `main`:
 
 - Direct pushes blocked — all changes go through a PR
 - `build` check must pass before merge
 - Force pushes blocked
 - Branch deletion blocked
+
+## The `build` gate
+
+Every repo runs the **same gate** on each PR + push, in this order:
+
+1. **Cache NuGet** — `actions/cache` on `~/.nuget/packages`, keyed by `hashFiles('**/*.csproj')`
+2. **Format check** — `dotnet format <project>.csproj --verify-no-changes` (per project; targets the `.csproj`, not the `.slnx`)
+3. **Build** — `dotnet build -c Release`
+4. **Test** — `dotnet test -c Release` (all three repos have a test project)
+
+A red gate blocks merge. `push-image` runs only on merge to `main`.
 
 ## Workflow Files
 
@@ -15,19 +26,26 @@ Both `game-portal` and `Bullet-Heaven` have the same rules on `main`:
 
 | Job | Trigger | What it does |
 |-----|---------|--------------|
-| `build` | every PR + push | `dotnet build portal-auth/PortalAuth.csproj` |
+| `build` | every PR + push | cache → format → `dotnet build portal-auth` → `dotnet test PortalAuth.Tests` |
 | `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/portal-auth:latest` |
 
 **Bullet-Heaven** — `.github/workflows/docker.yml`
 
 | Job | Trigger | What it does |
 |-----|---------|--------------|
-| `build` | every PR + push | `dotnet build` client + `dotnet test BulletHeaven.Tests` |
+| `build` | every PR + push | cache → format → `dotnet build` client → `dotnet test BulletHeaven.Tests` |
 | `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/bh-client:latest` |
+
+**orbit-break** — `.github/workflows/docker.yml`
+
+| Job | Trigger | What it does |
+|-----|---------|--------------|
+| `build` | every PR + push | cache → format → `dotnet build` client → `dotnet test OrbitBreak.Tests` |
+| `push-image` | merge to main only | builds + pushes `ghcr.io/alon-shviki/orbit-break-client:latest` |
 
 ## Issue Labels
 
-Both repos share the same label set:
+All three repos share the same label set:
 
 | Label | Colour | Meaning |
 |-------|--------|---------|

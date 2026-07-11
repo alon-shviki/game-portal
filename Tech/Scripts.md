@@ -1,6 +1,6 @@
 # Agentic Scripts
 
-All scripts live in `.claude/scripts/` and are version-controlled in the portal repo. Run them with `bash .claude/scripts/<script>` or by path. No machine-local setup required.
+All pipeline scripts live in **one place** — the portal repo at `.claude/scripts/`. There are **no per-repo copies**: the game repos (Bullet Heaven, Orbit Break) reference them by absolute path (`bash ~/Desktop/game/.claude/scripts/<script>`), and the scripts auto-detect which repo you're in. Shared logic lives in `lib.sh`, sourced by `auto-pr` and `finish-issue`. No machine-local setup required.
 
 ## start-issue
 
@@ -25,8 +25,9 @@ start-issue <number>           # no slug: auto-detects from git remote, then sea
 |------|------|------|
 | `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
 | `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
+| `ob` | `alon-shviki/orbit-break` | `~/Desktop/orbit-break` |
 
-To add a new game: add a row above **and** update `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue` and `.claude/scripts/start-task`.
+To add a new game: add a row above **and** update `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue` and `.claude/scripts/start-task`. Do **not** copy the scripts into the new repo — reference the portal's by absolute path.
 
 ## start-task
 
@@ -52,10 +53,10 @@ finish-issue
 1. Auto-detects `.Tests.csproj` and runs `dotnet test` — stops on failure
 2. Commits all staged changes with the issue title as the commit message
 3. Pushes branch to `origin`
-4. Opens a PR with `Closes #<N>` in the body
-5. Waits for CI (`gh pr checks --watch`)
-6. If CI green: merges PR (squash), deletes remote branch, removes worktree, pulls `origin/main`
-7. If CI fails: stops, leaves PR open for manual fix
+4. Opens a PR with `Closes #<N>` in the body (reuses an already-open PR)
+5. Waits for CI via `wait_for_ci` (retries while checks are still registering, then watches)
+6. **CI green** → merges PR (squash), removes the worktree completely, pulls `origin/main`, deletes the remote branch
+7. **CI red** → skips the merge and **keeps the worktree** so you can fix and re-run
 
 ## auto-pr
 
@@ -69,10 +70,21 @@ auto-pr "Update nginx config to add cache headers"
 **Steps:**
 1. Commits all changes
 2. Pushes branch to `origin`
-3. Opens a PR (does **not** auto-merge — review manually or wait for CI)
-4. Removes the worktree and pulls `origin/main`
+3. Opens a PR (or updates an already-open one). Does **not** merge — that's left to you.
+4. Waits for CI via `wait_for_ci`
+5. **CI green** → removes the worktree; the PR is left open, green, and ready to merge
+6. **CI red** → **keeps the worktree** at its path; fix the failure and re-run `auto-pr` to update the same PR
 
-If a PR is already open for the branch, it pushes an update and skips opening a duplicate.
+Because it now blocks on CI, `auto-pr` takes as long as the pipeline (~1 min here) instead of returning instantly.
+
+## lib.sh
+
+Shared helpers sourced by `auto-pr` and `finish-issue` — the single source that keeps the two scripts in sync:
+
+- `wait_for_ci <pr>` — blocks until the PR's checks finish; returns `0` if all green, `1` if any failed. Retries while checks are still registering (they appear a few seconds after `gh pr create`).
+- `remove_worktree <path> <main>` — force-removes the worktree, then `rm -rf`s the directory (git leaves ignored `bin/`/`obj/` behind, which would otherwise strand it) and runs `git worktree prune`.
+
+**Worktree lifecycle:** both scripts remove the worktree **only when CI is green**. A red build keeps it in place so the fix happens on the same branch.
 
 ## Related
 
