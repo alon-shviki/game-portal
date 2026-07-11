@@ -7,11 +7,11 @@ How the `.claude/` folder is organized and how to extend it. Obsidian can't inde
 | Path | What |
 |------|------|
 | `.claude/rules/*.md` | Always-loaded project rules — architecture, obsidian vault, adding a game |
-| `.claude/scripts/` | Workflow scripts (`start-issue`, `finish-issue`, `start-task`, `auto-pr`) — see [[Scripts]] |
-| `.claude/skills/pick-work/` | "What should I work on" triage skill — scoring rules from [[Agentic Pipeline]] |
+| `.claude/scripts/` | Workflow scripts (`start-issue`, `start-task`, `finish-issue`, `auto-pr`) + shared `lib.sh` — the **single source** for every repo; see [[Scripts]] |
+| `.claude/skills/*/SKILL.md` | `pick-work` (issue triage — [[Agentic Pipeline]]), `ci-cd` (pipeline reference), `obsidian-vault` (note management) |
 | `.claude/commands/*.md` | Slash commands: `/start-issue`, `/finish-issue`, `/start-task`, `/auto-pr` — thin wrappers over the scripts |
-| `.claude/hooks/` + `.claude/settings.json` | PreToolUse guard that blocks `git commit`/`git push` while on `main` (enforces the CLAUDE.md hard rule) |
-| `.claude/agents/` | Intentionally empty — pipeline steps run inline in the main session (see its README) |
+| `.claude/hooks/` + `.claude/settings.json` | Two PreToolUse guards: `block-main-commit.sh` blocks `git commit`/`git push` on `main`, and `block-main-edit.sh` blocks Edit/Write to files in the main checkout — both enforce the worktree-only hard rule |
+| `.claude/agents/` | No agent definitions (just a `README` explaining why) — pipeline steps run inline in the main session |
 | `.claude/settings.local.json` | Per-machine overrides — gitignored, never commit |
 
 ## Extending

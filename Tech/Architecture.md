@@ -3,14 +3,18 @@
 ## System Layout
 
 ```
-nginx  (TLS termination, reverse proxy)
+portal nginx  (:3000)
   /                  → portal shell  (static HTML)
   /api/auth/*        → portal-auth   (ASP.NET Core)
-  /bh/*              → bh-client     (Blazor WASM + nginx)
-  /<game-name>/*     → future games
+
+game containers (own nginx, embedded in the portal shell via <iframe>)
+  bh-client            :8080  → Bullet Heaven (Blazor WASM)
+  orbit-break-client   :8081  → Orbit Break   (Blazor WASM)
 ```
 
-All services in one `docker-compose.yml`. See [[Tech/Infrastructure]] for the compose setup.
+The portal nginx serves only the shell + `/api/auth/`; each game is a **separate container on its own port**, loaded inside the portal via an `<iframe>` (see Auth Flow below). Path-based routing behind a single nginx (`/<game>/*`) is the eventual production target — see `.claude/rules/architecture.md` → "Target Production Layout".
+
+All services live in one `docker-compose.yml`. See [[Tech/Infrastructure]] for the compose setup.
 
 ## Auth Flow
 
