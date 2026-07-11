@@ -3,7 +3,7 @@
 > Physics arena/breakout hybrid. Launch balls that curve around gravity wells to shatter procedurally generated block constellations, chaining combos for an ever-escalating high score.
 
 **Repo:** [alon-shviki/orbit-break](https://github.com/alon-shviki/orbit-break)
-**Play:** http://localhost:8081 (via `docker compose up`) or `dotnet run --project OrbitBreak.Client`
+**Play:** http://localhost:3000/orbit-break/ (via `docker compose up`; direct dev port 8081) or `dotnet run --project OrbitBreak.Client`
 
 ---
 
