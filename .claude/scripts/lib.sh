@@ -5,20 +5,25 @@
 
 # wait_for_ci <pr-number>
 # Blocks until the PR's checks finish. Returns 0 if all green, 1 if any failed.
-# Checks register a few seconds after `gh pr create`, so retry while none exist yet;
-# a genuine failure returns immediately.
+# Polls the check STATES rather than racing `gh pr checks --watch`: checks register
+# a few seconds after `gh pr create` (slower for cross-repo reusable workflows), and
+# --watch exits immediately if it's called in that gap, which used to false-report red.
+# Empty state list = not registered yet (wait); any pending = wait; any failed = red.
 wait_for_ci() {
-  local pr="$1" attempt
-  for attempt in $(seq 1 6); do
-    if gh pr checks "$pr" --watch; then
-      return 0
+  local pr="$1" i states
+  for i in $(seq 1 90); do   # ~15 min ceiling at 10s/poll
+    states=$(gh pr checks "$pr" --json state --jq '.[].state' 2>/dev/null || true)
+    if [ -z "$states" ]; then
+      echo "  waiting for checks to register (poll $i)…" >&2
+      sleep 10; continue
     fi
-    if gh pr checks "$pr" 2>&1 | grep -qi "no checks reported"; then
-      echo "  checks not registered yet (attempt $attempt/6) — retrying in 15s…" >&2
-      sleep 15
-      continue
+    if grep -qiE 'FAIL|ERROR|CANCEL|TIMED_OUT|ACTION_REQUIRED|STARTUP_FAILURE|STALE' <<<"$states"; then
+      return 1
     fi
-    return 1   # checks ran and at least one failed
+    if grep -qiE 'PENDING|QUEUE|IN_PROGRESS|EXPECTED|REQUEST|WAIT' <<<"$states"; then
+      sleep 10; continue
+    fi
+    return 0   # all terminal, none failed (SUCCESS / SKIPPED / NEUTRAL)
   done
   return 1
 }

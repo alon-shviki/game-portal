@@ -81,7 +81,7 @@ Because it now blocks on CI, `auto-pr` takes as long as the pipeline (~1 min her
 
 Shared helpers sourced by `auto-pr` and `finish-issue` — the single source that keeps the two scripts in sync:
 
-- `wait_for_ci <pr>` — blocks until the PR's checks finish; returns `0` if all green, `1` if any failed. Retries while checks are still registering (they appear a few seconds after `gh pr create`).
+- `wait_for_ci <pr>` — blocks until the PR's checks finish; returns `0` if all green, `1` if any failed. Polls check **states** (not a raw `gh pr checks --watch`) so it waits correctly while checks are still registering *or* pending — cross-repo reusable-workflow checks register a beat slower, and the old `--watch` race would false-report red in that gap.
 - `remove_worktree <path> <main>` — force-removes the worktree, then `rm -rf`s the directory (git leaves ignored `bin/`/`obj/` behind, which would otherwise strand it) and runs `git worktree prune`.
 - `remind_docs` — **Documentation Rule nudge.** Called right after `git add -A` in both scripts: if the staged change touches code but no `.md`, it prints a reminder to update the relevant doc (portal `Tech/…` or the game's `Notes/…`). Non-blocking and heuristic — it never blocks a trivial change, it just makes "I forgot the docs" visible before the PR is opened.
 
