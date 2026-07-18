@@ -117,20 +117,40 @@ docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build
 
 Uses `nginx-tls.conf` with mkcert-issued local certs — see `Tech/Infrastructure.md` for setup.
 
-## Claude Code & Obsidian
+## Claude Code Setup
 
-This repo is both a working codebase and an Obsidian vault, and it's developed primarily with [Claude Code](https://docs.claude.com/en/docs/claude-code).
+This repo is developed primarily with [Claude Code](https://docs.claude.com/en/docs/claude-code), and it's the control point for a 3-repo agentic workflow — the portal owns the shared pieces; the games reference them instead of duplicating them.
 
-**Claude Code**
-- `.claude/scripts/start-issue` / `start-task` / `finish-issue` / `auto-pr` drive every change: each creates a disposable git worktree, and work never lands on `main` directly.
-- These scripts are repo-agnostic and live only here — game repos reference them by absolute path (`bash ~/Desktop/game/.claude/scripts/start-issue <n>`), auto-detecting which repo they're run from.
-- `/pick-work` fetches, scores, and ranks open issues across all three managed repos (`portal`, `bh`, `ob`) in one pass.
-- `CLAUDE.md` in each repo (plus any `LOAD GAME CONTEXT` block a script prints) carries the hard rules and architecture Claude reads before writing code — see `Tech/Claude Setup.md` for the full `.claude/` layout (skills, commands, hooks).
+**`CLAUDE.md`** is the root instructions file read at the start of every session: commands, the managed-repos table, the pick-work → start-issue/start-task → finish-issue/auto-pr workflow, and the hard rules (never commit to `main`, never replace a game symlink with a copy, never add auth or a scores DB to a game).
 
-**Obsidian**
-- `Design/`, `Tech/`, and `Games/` form a vault rooted at this repo; `Home.md` is the dashboard, `Roadmap.md` tracks cross-repo milestones.
-- `Games/<game-folder>` entries are **symlinks** into each game repo's own `Notes/` folder (never copies), so portal and game notes share one source of truth editable from either vault.
-- `.obsidian/` is gitignored everywhere (per-machine workspace state); see `.claude/rules/obsidian.md` for vault conventions and wiki-link paths.
+**`.claude/rules/`** holds supplementary docs loaded on demand rather than crammed into `CLAUDE.md` itself:
+
+- `architecture.md` — portal architecture, mirroring `Tech/Architecture.md`
+- `adding-a-game.md` — the full checklist for onboarding a new game into the portal
+- `obsidian.md` — vault structure and symlink conventions
+
+**`.claude/scripts/`** is the actual pipeline implementation — `start-issue`, `start-task`, `finish-issue`, `auto-pr`, and a shared `lib.sh`. They're repo-agnostic (each auto-detects the calling repo from its git remote) and live only here; Bullet Heaven and Orbit Break call them by absolute path (`bash ~/Desktop/game/.claude/scripts/start-issue <n>`) instead of vendoring their own copies.
+
+**`.claude/commands/`** wraps those scripts as slash commands — `/start-issue`, `/start-task`, `/finish-issue`, `/auto-pr` — so a script invocation is one command instead of a full `bash .claude/scripts/...` line.
+
+**`.claude/skills/`** are the packaged workflows actually in use here:
+
+- `pick-work` — fetches open issues from every managed repo, scores and ranks them, and surfaces the top candidates when asked "what should I work on"
+- `ci-cd` — the mental model for this stack's two-stage CI/CD pipeline (.NET/Blazor WASM build → Docker image → GHCR), used when setting up or debugging a repo's GitHub Actions workflow
+- `review-diff` — runs a pre-merge checklist against the current worktree's diff before `finish-issue` or `auto-pr`
+- `obsidian-vault` — finds, creates, and organizes notes in this vault using wikilinks
+
+**`.claude/hooks/`** — `block-main-edit.sh` and `block-main-commit.sh` are wired into `settings.json`'s `PreToolUse` and enforce "always work in a worktree, never commit to `main`" at the tool-call level, so the rule can't be skipped by accident. A `Stop` hook compiles `PortalAuth.Tests` after any `.cs` edit, blocking a session from finishing on a broken build.
+
+Full layout reference: `Tech/Claude Setup.md`.
+
+## Obsidian
+
+This repo doubles as the root of the whole project's Obsidian vault. `Home.md` is the dashboard — a status table for each game and portal component, plus links out to every design and tech note. `Roadmap.md` tracks cross-repo milestones.
+
+`Design/` holds portal-level product notes — `Vision.md` (landing page and user journey), `Shared Auth.md` (JWT flow and token relay), `UI Identity.md` (colour palette and typography) — and `Tech/` holds the engineering notes this README points back to, like `Architecture.md`, `Infrastructure.md`, `Adding a New Game.md`, and `Claude Setup.md`.
+
+`Games/` is where the portal vault reaches into each game's own vault: `Games/Bullet Heaven.md` and `Games/Orbit Break.md` are hub pages, and `Games/Bullet-Heaven` / `Games/orbit-break` are symlinks straight into each game repo's `Notes/` folder — so a note written from inside a game repo shows up here too, with nothing duplicated between the two vaults.
 
 ## Contributing / Workflow
 
