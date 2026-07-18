@@ -117,6 +117,21 @@ docker compose -f docker-compose.yml -f docker-compose.tls.yml up --build
 
 Uses `nginx-tls.conf` with mkcert-issued local certs — see `Tech/Infrastructure.md` for setup.
 
+## Claude Code & Obsidian
+
+This repo is both a working codebase and an Obsidian vault, and it's developed primarily with [Claude Code](https://docs.claude.com/en/docs/claude-code).
+
+**Claude Code**
+- `.claude/scripts/start-issue` / `start-task` / `finish-issue` / `auto-pr` drive every change: each creates a disposable git worktree, and work never lands on `main` directly.
+- These scripts are repo-agnostic and live only here — game repos reference them by absolute path (`bash ~/Desktop/game/.claude/scripts/start-issue <n>`), auto-detecting which repo they're run from.
+- `/pick-work` fetches, scores, and ranks open issues across all three managed repos (`portal`, `bh`, `ob`) in one pass.
+- `CLAUDE.md` in each repo (plus any `LOAD GAME CONTEXT` block a script prints) carries the hard rules and architecture Claude reads before writing code — see `Tech/Claude Setup.md` for the full `.claude/` layout (skills, commands, hooks).
+
+**Obsidian**
+- `Design/`, `Tech/`, and `Games/` form a vault rooted at this repo; `Home.md` is the dashboard, `Roadmap.md` tracks cross-repo milestones.
+- `Games/<game-folder>` entries are **symlinks** into each game repo's own `Notes/` folder (never copies), so portal and game notes share one source of truth editable from either vault.
+- `.obsidian/` is gitignored everywhere (per-machine workspace state); see `.claude/rules/obsidian.md` for vault conventions and wiki-link paths.
+
 ## Contributing / Workflow
 
 This repo drives an agentic pipeline shared across all three repos:
