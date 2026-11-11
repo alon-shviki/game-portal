@@ -8,13 +8,15 @@ portal nginx  (:3000)
   /api/auth/*        → portal-auth   (ASP.NET Core)
   /bh/*              → bh-client           (Blazor WASM, proxied)
   /orbit-break/*     → orbit-break-client  (Blazor WASM, proxied)
+  /iron-crypt/*      → iron-crypt-client   (Blazor WASM, proxied)
 
 dev-only direct ports (bypass the portal nginx)
   bh-client            :8080
   orbit-break-client   :8081
+  iron-crypt-client    :8082
 ```
 
-**Path-based routing**: the portal nginx proxies `/<game>/*` to each game's container and rewrites the game's `<base href="/">` to `<base href="/<game>/">` on the fly via `sub_filter`. Because the Blazor clients set `HttpClient.BaseAddress` from the base href, all assets *and* API calls follow the sub-path automatically — game images need no changes and still work standalone on :8080/:8081.
+**Path-based routing**: the portal nginx proxies `/<game>/*` to each game's container and rewrites the game's `<base href="/">` to `<base href="/<game>/">` on the fly via `sub_filter`. Because the Blazor clients set `HttpClient.BaseAddress` from the base href, all assets *and* API calls follow the sub-path automatically — game images need no changes and still work standalone on :8080/:8081/:8082.
 
 **sub_filter contract**: every game's `index.html` must contain the literal string `<base href="/"` — the rewrite is an exact-string match. Reformatting that tag in a game repo silently breaks the game under the portal (CI stays green), so don't.
 

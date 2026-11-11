@@ -40,6 +40,7 @@ docker compose up --build
 | Portal shell | http://localhost:3000 |
 | Bullet Heaven | http://localhost:3000/bh/ (dev-only direct: :8080) |
 | Orbit Break | http://localhost:3000/orbit-break/ (dev-only direct: :8081) |
+| Iron Crypt | http://localhost:3000/iron-crypt/ (dev-only direct: :8082) |
 
 ### Run tests
 
@@ -71,6 +72,7 @@ nginx (:3000)
   /api/auth/*           → portal-auth (strips /api/auth prefix)
   /bh/*                 → bh-client            (base-href rewritten to /bh/)
   /orbit-break/*        → orbit-break-client   (base-href rewritten to /orbit-break/)
+  /iron-crypt/*         → iron-crypt-client    (base-href rewritten to /iron-crypt/)
 ```
 
 **One JWT signing key** across every service. The portal auth server issues tokens on login/register; each game client stores the token in `localStorage["jwt"]` and sends it as `Authorization: Bearer` on every API call. Game clients expose **no** `/register` or `/login` of their own — auth is portal-only, and games have no database.
@@ -97,6 +99,7 @@ Passwords hashed with BCrypt (work factor 12). JWT claims: `sub` (user ID), `uni
 |------|------|------|--------|
 | Bullet Heaven | `bh` | [Bullet-Heaven](https://github.com/alon-shviki/Bullet-Heaven) | Active |
 | Orbit Break | `ob` | [orbit-break](https://github.com/alon-shviki/orbit-break) | Active |
+| Iron Crypt | `ic` | [iron-crypt](https://github.com/alon-shviki/iron-crypt) | Active |
 
 Each game is a self-contained Blazor WASM client with its own nginx image, proxying `/api/scores` and `/api/leaderboard` back to `portal-auth`. No game has its own API server or database — see each repo's README for details.
 
@@ -150,7 +153,7 @@ This repo doubles as the root of the whole project's Obsidian vault. `Home.md` i
 
 `Design/` holds portal-level product notes — `Vision.md` (landing page and user journey), `Shared Auth.md` (JWT flow and token relay), `UI Identity.md` (colour palette and typography) — and `Tech/` holds the engineering notes this README points back to, like `Architecture.md`, `Infrastructure.md`, `Adding a New Game.md`, and `Claude Setup.md`.
 
-`Games/` is where the portal vault reaches into each game's own vault: `Games/Bullet Heaven.md` and `Games/Orbit Break.md` are hub pages, and `Games/Bullet-Heaven` / `Games/orbit-break` are symlinks straight into each game repo's `Notes/` folder — so a note written from inside a game repo shows up here too, with nothing duplicated between the two vaults.
+`Games/` is where the portal vault reaches into each game's own vault: `Games/Bullet Heaven.md`, `Games/Orbit Break.md` and `Games/Iron Crypt.md` are hub pages, and `Games/Bullet-Heaven` / `Games/orbit-break` / `Games/iron-crypt` are symlinks straight into each game repo's `Notes/` folder — so a note written from inside a game repo shows up here too, with nothing duplicated between the two vaults.
 
 ## Contributing / Workflow
 

@@ -3,7 +3,7 @@
 ## Commands
 - **Fresh clone**: `git clone <repo> && cd game && cp .env.example .env`
 - **Full stack**: `cd ~/Desktop/game && docker compose up --build`
-  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:3000/bh/ · Orbit Break → http://localhost:3000/orbit-break/ (direct dev ports: 8080 / 8081)
+  - Portal → http://localhost:3000 · Bullet Heaven → http://localhost:3000/bh/ · Orbit Break → http://localhost:3000/orbit-break/ · Iron Crypt → http://localhost:3000/iron-crypt/ (direct dev ports: 8080 / 8081 / 8082)
 
 ## Games
 
@@ -11,6 +11,7 @@
 |------|------|------|--------|
 | Bullet Heaven | `bh` | `~/Desktop/Bullet-Heaven` | Active |
 | Orbit Break | `ob` | `~/Desktop/orbit-break` | Active |
+| Iron Crypt | `ic` | `~/Desktop/iron-crypt` | Active |
 
 ## Read Before Working
 
@@ -64,6 +65,7 @@ Use `bug` for breakage · `question` for decisions · `enhancement` for improvem
 | `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
 | `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
 | `ob` | `alon-shviki/orbit-break` | `~/Desktop/orbit-break` |
+| `ic` | `alon-shviki/iron-crypt` | `~/Desktop/iron-crypt` |
 
 Adding a new game: add a row here + update `REPOS`/`ROOTS` in `.claude/scripts/start-issue` and `.claude/scripts/start-task`.
 

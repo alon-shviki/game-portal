@@ -91,7 +91,7 @@ Each game keeps its own QA/test/docs/e2e sub-agents in its own repo (e.g. Bullet
 
 ## CI / Branch Protection
 
-`game-portal`, `Bullet-Heaven`, and `orbit-break`:
+`game-portal`, `Bullet-Heaven`, `orbit-break`, and `iron-crypt`:
 - Direct pushes to `main` blocked
 - PRs require the `build` check to pass
 - `build` job: cache → `dotnet format --verify` → build → test

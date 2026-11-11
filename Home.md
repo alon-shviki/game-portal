@@ -8,6 +8,7 @@ A single platform hosting multiple browser games. One account, shared leaderboar
 |------|--------|-------|------|
 | [[Games/Bullet Heaven]] | ✅ Live | Blazor WASM | :8080 |
 | [[Games/Orbit Break]] | ✅ Playable core | Blazor WASM | :8081 |
+| [[Games/Iron Crypt]] | ✅ Playable — 8 phases built | Blazor WASM | :8082 |
 
 ## Portal
 
@@ -35,4 +36,5 @@ A single platform hosting multiple browser games. One account, shared leaderboar
 ## Links
 
 - [[Games/Bullet Heaven]] — full game page
+- [[Games/Orbit Break]] · [[Games/Iron Crypt]] — game pages
 - [[Roadmap]] — status of all tasks + what's next

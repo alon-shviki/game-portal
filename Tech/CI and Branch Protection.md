@@ -2,7 +2,7 @@
 
 ## What's Protected
 
-All three repos — `game-portal`, `Bullet-Heaven`, `orbit-break` — have the same rules on `main`:
+All four repos — `game-portal`, `Bullet-Heaven`, `orbit-break`, `iron-crypt` — have the same rules on `main`:
 
 - Direct pushes blocked — all changes go through a PR
 - `ci / build` check must pass before merge
@@ -23,6 +23,7 @@ CI is **single-source**, like the pipeline scripts. The gate lives once in the p
 | `game-portal` | `ci.yml` → `./.github/workflows/dotnet-ci.yml` (local ref) | `portal-auth` / `PortalAuth.Tests` / `portal-auth` |
 | `Bullet-Heaven` | `ci.yml` → `…/dotnet-ci.yml@main` | `BulletHeaven.Client` / `BulletHeaven.Tests` / `bh-client` |
 | `orbit-break` | `ci.yml` → `…/dotnet-ci.yml@main` | `OrbitBreak.Client` / `OrbitBreak.Tests` / `orbit-break-client` |
+| `iron-crypt` | `ci.yml` → `…/dotnet-ci.yml@main` | `IronCrypt.Client` / `IronCrypt.Tests` / `iron-crypt-client` |
 
 **Check name:** because a caller job (`ci`) invokes the reusable workflow, the status check is reported as **`ci / build`** (not `build`) — that's the required context in branch protection. **Never rename the `build` job**: `ci / build` is pinned by branch protection on all three repos AND by orbit-break's ruleset — renaming it silently un-gates merges until both layers are updated. Editing `dotnet-ci.yml` changes the gate for all three repos at once. Pin the games to a tag/SHA instead of `@main` if you want changes to roll out deliberately rather than immediately.
 

@@ -5,7 +5,7 @@ description: CI/CD for the game-portal stack (.NET / Blazor WASM → Docker imag
 
 # CI/CD — Game Portal Stack
 
-Every repo here (portal, Bullet Heaven, Orbit Break) follows the **same two-stage pipeline**. This skill is the mental model; the source of truth for any repo is its own `.github/workflows/*.yml`.
+Every repo here (portal, Bullet Heaven, Orbit Break, Iron Crypt) follows the **same two-stage pipeline**. This skill is the mental model; the source of truth for any repo is its own `.github/workflows/*.yml`.
 
 ## The pipeline
 
@@ -35,6 +35,7 @@ Per-repo images:
 | `game-portal` | `portal-auth/PortalAuth.csproj` | `PortalAuth.Tests` | `ghcr.io/alon-shviki/portal-auth:latest` |
 | `Bullet-Heaven` | `BulletHeaven.Client` | `BulletHeaven.Tests` | `ghcr.io/alon-shviki/bh-client:latest` |
 | `orbit-break` | `OrbitBreak.Client` | `OrbitBreak.Tests` | `ghcr.io/alon-shviki/orbit-break-client:latest` |
+| `iron-crypt` | `IronCrypt.Client` | `IronCrypt.Tests` | `ghcr.io/alon-shviki/iron-crypt-client:latest` |
 
 `docker-compose.yml` in the portal repo pulls those `:latest` images to run the full stack.
 

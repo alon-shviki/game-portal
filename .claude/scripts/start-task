@@ -8,11 +8,13 @@ declare -A REPOS=(
   [portal]="alon-shviki/game-portal"
   [bh]="alon-shviki/Bullet-Heaven"
   [ob]="alon-shviki/orbit-break"
+  [ic]="alon-shviki/iron-crypt"
 )
 declare -A ROOTS=(
   [portal]="$HOME/Desktop/game"
   [bh]="$HOME/Desktop/Bullet-Heaven"
   [ob]="$HOME/Desktop/orbit-break"
+  [ic]="$HOME/Desktop/iron-crypt"
 )
 
 NAME="$1"
