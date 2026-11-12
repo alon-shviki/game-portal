@@ -1,6 +1,6 @@
 # Agentic Scripts
 
-All pipeline scripts live in **one place** — the portal repo at `.claude/scripts/`. There are **no per-repo copies**: the game repos (Bullet Heaven, Orbit Break) reference them by absolute path (`bash ~/Desktop/game/.claude/scripts/<script>`), and the scripts auto-detect which repo you're in. Shared logic lives in `lib.sh`, sourced by `auto-pr` and `finish-issue`. No machine-local setup required.
+All pipeline scripts live in **one place** — the portal repo at `.claude/scripts/`. There are **no per-repo copies**: the game repos (Bullet Heaven, Orbit Break, Iron Crypt) reference them by absolute path (`bash ~/Desktop/game/.claude/scripts/<script>`), and the scripts auto-detect which repo you're in. Shared logic lives in `lib.sh`, sourced by `auto-pr` and `finish-issue`. No machine-local setup required.
 
 ## start-issue
 
@@ -26,6 +26,7 @@ start-issue <number>           # no slug: auto-detects from git remote, then sea
 | `portal` | `alon-shviki/game-portal` | `~/Desktop/game` |
 | `bh` | `alon-shviki/Bullet-Heaven` | `~/Desktop/Bullet-Heaven` |
 | `ob` | `alon-shviki/orbit-break` | `~/Desktop/orbit-break` |
+| `ic` | `alon-shviki/iron-crypt` | `~/Desktop/iron-crypt` |
 
 To add a new game: add a row above **and** update `REPOS`/`ROOTS` maps in `.claude/scripts/start-issue` and `.claude/scripts/start-task`. Do **not** copy the scripts into the new repo — reference the portal's by absolute path.
 

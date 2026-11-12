@@ -1,6 +1,6 @@
 ---
 name: pick-work
-description: Fetch open issues from all managed repos (portal, Bullet Heaven, Orbit Break), score and rank them, present the top 5. Use when the user asks "what should I work on" or wants to pick the next task.
+description: Fetch open issues from all managed repos (portal, Bullet Heaven, Orbit Break, Iron Crypt), score and rank them, present the top 5. Use when the user asks "what should I work on" or wants to pick the next task.
 ---
 
 # Pick Work
@@ -11,6 +11,7 @@ description: Fetch open issues from all managed repos (portal, Bullet Heaven, Or
 gh issue list --repo alon-shviki/game-portal   --state open --json number,title,labels,reactionGroups,createdAt
 gh issue list --repo alon-shviki/Bullet-Heaven --state open --json number,title,labels,reactionGroups,createdAt
 gh issue list --repo alon-shviki/orbit-break   --state open --json number,title,labels,reactionGroups,createdAt
+gh issue list --repo alon-shviki/iron-crypt    --state open --json number,title,labels,reactionGroups,createdAt
 ```
 
 2. Score each issue (from `Tech/Agentic Pipeline.md`):

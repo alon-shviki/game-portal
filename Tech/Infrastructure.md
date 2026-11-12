@@ -9,12 +9,14 @@ cd ~/Desktop/game && docker compose up
 # Portal shell  → http://localhost:3000
 # Bullet Heaven → http://localhost:3000/bh/          (direct dev port: 8080)
 # Orbit Break   → http://localhost:3000/orbit-break/ (direct dev port: 8081)
+# Iron Crypt    → http://localhost:3000/iron-crypt/  (direct dev port: 8082)
 ```
 
 Game client only (no auth/scores — for pure game dev):
 ```bash
 cd ~/Desktop/Bullet-Heaven/BulletHeaven.Client && dotnet run   # → http://localhost:5292
 cd ~/Desktop/orbit-break/OrbitBreak.Client && dotnet run        # Orbit Break
+cd ~/Desktop/iron-crypt/IronCrypt.Client && dotnet run          # Iron Crypt
 ```
 
 ---
@@ -24,12 +26,13 @@ cd ~/Desktop/orbit-break/OrbitBreak.Client && dotnet run        # Orbit Break
 ```
 docker-compose.yml  (~/Desktop/game/)
   ├── nginx                :3000  → portal shell (static) + /api/auth/ → portal-auth
-  │                                  + /bh/, /orbit-break/ → game clients (base-href rewritten via sub_filter)
+  │                                  + /bh/, /orbit-break/, /iron-crypt/ → game clients (base-href rewritten via sub_filter)
   ├── portal-auth          :5001  → ASP.NET Core — auth, scores, leaderboard (rate-limited login/register)
   ├── postgres             :5432  → portal DB (users + scores)
   ├── bh-client            :8080* → GHCR image (Blazor WASM + nginx)
   │                                  nginx proxies /api/scores, /api/leaderboard → portal-auth
-  └── orbit-break-client   :8081* → GHCR image (Blazor WASM + nginx), same proxy contract
+  ├── orbit-break-client   :8081* → GHCR image (Blazor WASM + nginx), same proxy contract
+  └── iron-crypt-client    :8082* → GHCR image (Blazor WASM + nginx), same proxy contract
 
   * dev-only direct ports — players go through :3000
 ```
@@ -48,6 +51,7 @@ services:
   postgres:             # portal DB
   bh-client:            # image: ghcr.io/alon-shviki/bh-client:latest — port 8080
   orbit-break-client:   # image: ghcr.io/alon-shviki/orbit-break-client:latest — port 8081
+  iron-crypt-client:    # image: ghcr.io/alon-shviki/iron-crypt-client:latest — port 8082
 ```
 
 See the actual file for full env var wiring. Port 80 is taken by `idp-control-plane` on the dev machine, so portal runs on 3000.
@@ -106,6 +110,7 @@ All secrets in `.env` (gitignored). Copy `.env.example` on a fresh clone.
 |-------|-------------------|---------------------|
 | `ghcr.io/alon-shviki/bh-client` | BH `docker.yml`, merge to main | pulled |
 | `ghcr.io/alon-shviki/orbit-break-client` | OB `docker.yml`, merge to main | pulled |
+| `ghcr.io/alon-shviki/iron-crypt-client` | Iron Crypt `ci.yml`, merge to main | pulled |
 | `ghcr.io/alon-shviki/portal-auth` | portal `ci.yml`, merge to main | **built locally** (`build: ./portal-auth`) — the pushed image isn't pulled by compose today |
 
 Every workflow's `build` gate runs cache → format → build → test before the image is pushed — see [[Tech/CI and Branch Protection]].

@@ -434,6 +434,20 @@
       </div>
     </div>
 
+    <!-- Iron Crypt -->
+    <div class="card">
+      <div class="card-thumb" style="font-size:56px;">💀</div>
+      <div class="card-body">
+        <div>
+          <div class="card-title">Iron Crypt</div>
+          <div class="card-tagline">Descend. Find the keys. Shoot back.</div>
+        </div>
+        <div class="card-footer">
+          <button class="btn-play" onclick="openGame('/iron-crypt', 'Iron Crypt')">Play →</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Coming soon slots -->
     <div class="card">
       <div class="card-thumb coming-soon">🏰</div>
@@ -470,6 +484,7 @@
     <div class="lb-game-tabs" id="lbTabs">
       <button class="lb-tab active" onclick="loadLeaderboard('bullet-heaven', this)">Bullet Heaven</button>
       <button class="lb-tab" onclick="loadLeaderboard('orbit-break', this)">Orbit Break</button>
+      <button class="lb-tab" onclick="loadLeaderboard('iron-crypt', this)">Iron Crypt</button>
     </div>
     <div id="lbBody">
       <p class="lb-empty">Loading…</p>
@@ -602,7 +617,7 @@
 
   function openGame(baseUrl, name) {
     const token = localStorage.getItem('jwt');
-    const url = token ? `${baseUrl}/#portal_token=${encodeURIComponent(token)}` : baseUrl;
+    const url = token ? `${baseUrl}/#portal_token=${encodeURIComponent(token)}` : `${baseUrl}/`; // trailing slash: without it nginx 301s to a port-less URL and the iframe breaks
     document.getElementById('gameBarTitle').textContent = name || '';
     document.getElementById('gameIframe').src = url;
     document.getElementById('gameFrame').classList.add('open');

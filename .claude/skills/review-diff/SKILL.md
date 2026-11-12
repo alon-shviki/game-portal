@@ -13,7 +13,7 @@ Run `git diff main...HEAD` in the current worktree and check the diff against th
 2. **`MapInboundClaims = false` untouched** — portal-auth endpoints read raw `sub`/`unique_name` claims; removing this silently breaks every authed endpoint.
 3. **Migrations not hand-edited** — files under `Migrations/` only change via `dotnet ef migrations add`.
 4. **Documentation Rule** — code changed but no `.md` touched? Flag it.
-5. **CI workflow safety** — if `.github/workflows/` changed: the `build` job in `dotnet-ci.yml` must keep its name (`ci / build` is pinned by branch protection on all 3 repos AND orbit-break's ruleset). Changes take effect for all repos instantly (they call `@main`).
+5. **CI workflow safety** — if `.github/workflows/` changed: the `build` job in `dotnet-ci.yml` must keep its name (`ci / build` is pinned by branch protection on all 4 repos AND orbit-break's ruleset). Changes take effect for all repos instantly (they call `@main`).
 6. **sub_filter contract** — if a game's `index.html` changed: the literal `<base href="/"` string must survive (portal nginx rewrites it).
 7. **Scope creep** — diff contains changes unrelated to the task/issue? Flag for a separate PR.
 

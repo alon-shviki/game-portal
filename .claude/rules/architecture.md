@@ -9,7 +9,7 @@ nginx  (:3000, reverse proxy)
   /<game-name>/*        → game client (Blazor WASM, proxied + base-href rewritten via sub_filter)
 ```
 
-All services in one top-level `docker-compose.yml`. Games also expose dev-only direct ports (8080/8081) that bypass the portal nginx.
+All services in one top-level `docker-compose.yml`. Games also expose dev-only direct ports (8080/8081/8082) that bypass the portal nginx.
 
 **sub_filter contract**: each game's `index.html` must contain the literal string `<base href="/"` — the portal nginx rewrites it to `<base href="/<game>/">`. Exact-string match; don't reformat the tag in game repos.
 
@@ -68,8 +68,9 @@ All via `.env` (gitignored) — never hardcoded.
 
 ## Current State
 
-- Portal shell: built (`shell/index.html`) — auth + leaderboard page; game buttons open `/bh/` and `/orbit-break/` in an iframe
+- Portal shell: built (`shell/index.html`) — auth + leaderboard page; game buttons open `/bh/`, `/orbit-break/` and `/iron-crypt/` in an iframe
 - Portal auth server: built (`portal-auth/`) — auth + scores + leaderboard endpoints
-- Docker Compose: `docker-compose.yml` — portal nginx (3000, path-routes to games), portal-auth, postgres, bh-client (dev :8080), orbit-break-client (dev :8081)
+- Docker Compose: `docker-compose.yml` — portal nginx (3000, path-routes to games), portal-auth, postgres, bh-client (dev :8080), orbit-break-client (dev :8081), iron-crypt-client (dev :8082)
 - Bullet Heaven: game client image on GHCR (`ghcr.io/alon-shviki/bh-client`) — nginx proxies scores/leaderboard to portal-auth; no standalone API server
 - Orbit Break: game client image on GHCR (`ghcr.io/alon-shviki/orbit-break-client`) — Blazor WASM, same client-only contract (slug `orbit-break`)
+- Iron Crypt: game client image on GHCR (`ghcr.io/alon-shviki/iron-crypt-client`) — Blazor WASM raycasting shooter, same client-only contract (slug `iron-crypt`)
