@@ -42,12 +42,26 @@ No standalone Iron Crypt API server or database, matching every other game on th
 
 ## Design Notes
 
-- [[Games/iron-crypt/Design/Core Loop|Core Loop]] — loop, weapons, enemies, pickups, scoring, difficulty curve
+- [[Games/iron-crypt/Design/Core Loop|Core Loop]] — loop, seeds, scoring
+- [[Games/iron-crypt/Design/Weapons|Weapons]] — the three guns, magazines, reload rules
+- [[Games/iron-crypt/Design/Enemies|Enemies]] — stats and what each asks of the player
+- [[Games/iron-crypt/Design/Difficulty|Difficulty]] — per-depth curve and supply rates
+- [[Games/iron-crypt/Design/Level Design|Level Design]] — rooms, doors, keys, exit, minimap
+- [[Games/iron-crypt/Design/Visual Identity|Visual Identity]] — palette, rendering style
+- [[Games/iron-crypt/Design/Controls and UI|Controls and UI]] — keyboard, mouse, touch, screens
 
 ## Tech Notes
 
 - [[Games/iron-crypt/Tech/Architecture|Architecture]] — stack, portal integration contract
-- [[Games/iron-crypt/Tech/Engine|Engine]] — code layout, renderer, generator, AI, tuning knobs
+- [[Games/iron-crypt/Tech/Engine|Engine]] — code layout, frame flow, tuning knobs
+- [[Games/iron-crypt/Tech/Renderer|Renderer]] — raycaster, sprites, resolution
+- [[Games/iron-crypt/Tech/Level Generator|Level Generator]] — algorithm, locks
+- [[Games/iron-crypt/Tech/Enemy AI|Enemy AI]] — state machine, pathfinding
+- [[Games/iron-crypt/Tech/Input and Interop|Input and Interop]] — frame contract, touch
+- [[Games/iron-crypt/Tech/Audio|Audio]] — synthesized sound and music
+- [[Games/iron-crypt/Tech/Testing|Testing]] — coverage and how to write a test
+- [[Games/iron-crypt/Tech/Performance|Performance]] — measurements
+- [[Games/iron-crypt/Tech/Decisions|Decisions]] — choices and reasons
 
 ## Tasks
 
